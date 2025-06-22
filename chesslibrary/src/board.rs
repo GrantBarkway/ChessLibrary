@@ -1,3 +1,6 @@
+// Just while testing
+#![allow(dead_code, unused_variables)]
+
 pub struct Bitboard(pub u64);
 
 pub struct Board {
@@ -6,10 +9,9 @@ pub struct Board {
     occupied: Bitboard,
 }
 
-
 // changed up a bit from Shakmaty
 impl Board {
-    pub const fn new() -> Board {
+    pub fn new() -> Board {
         Board {
             role: ByRole {
                 pawn: Bitboard(0x00ff_0000_0000_ff00),
