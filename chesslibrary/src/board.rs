@@ -1,6 +1,8 @@
 // Just while testing
 #![allow(dead_code, unused_variables)]
 
+use crate::mv::Move;
+
 pub struct Bitboard(pub u64);
 
 pub struct Board {
@@ -9,7 +11,7 @@ pub struct Board {
     occupied: Bitboard,
 }
 
-// changed up a bit from Shakmaty
+// inspired by Shakmaty
 impl Board {
     pub fn new() -> Board {
         Board {
@@ -27,6 +29,10 @@ impl Board {
             },
             occupied: Bitboard(0xffff_0000_0000_ffff),
         }
+    }
+
+    fn make_move(&mut self, mv: Move) -> Board {
+        return Board::new();
     }
 }
 

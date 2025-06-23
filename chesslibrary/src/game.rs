@@ -1,3 +1,6 @@
+// Just while testing
+#![allow(dead_code, unused_variables)]
+
 use crate::board::Board;
 
 pub struct Game {
@@ -9,6 +12,10 @@ impl Game {
         Game {
             position: Vec::new(),
         }
+    }
+    
+    fn play(&mut self, board: Board) {
+        self.position.push(board);
     }
 }
 

@@ -1,4 +1,3 @@
-mod board;
 fn main() {
     
 }
