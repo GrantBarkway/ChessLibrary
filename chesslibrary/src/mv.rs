@@ -8,6 +8,15 @@ pub struct Move {
     pub from_square: Bitboard,
 }
 
+impl Move {
+    pub fn new() -> Move {
+        Move {
+            target_square: Bitboard(0b10000000000000000),
+            from_square: Bitboard(0b100000000),
+        }
+    }
+}
+
 enum Rank {
     First,
     Second,

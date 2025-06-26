@@ -46,7 +46,43 @@ impl Board {
     }
     
     pub fn make_move(&mut self, mv: Move) {
+        self.clear_square(mv.from_square);
+        self.occupied.0 ^= mv.target_square.0;
+    }
+    
+    pub fn clear_square(&mut self, square: Bitboard) {
         
+        self.occupied.0 ^= square.0;
+
+        if (self.role.pawn.0 & square.0).count_ones() != 0 {
+            self.role.pawn.0 ^= square.0;
+        } else if (self.role.knight.0 & square.0).count_ones() != 0 {
+            self.role.knight.0 ^= square.0;
+        } else if (self.role.bishop.0 & square.0).count_ones() != 0 {
+            self.role.bishop.0 ^= square.0;
+        } else if (self.role.rook.0 & square.0).count_ones() != 0 {
+            self.role.rook.0 ^= square.0;
+        } else if (self.role.queen.0 & square.0).count_ones() != 0 {
+            self.role.queen.0 ^= square.0;
+        } else {
+            self.role.king.0 ^= square.0;
+        }
+        
+        if (self.colour.black.0 & square.0).count_ones() != 0 {
+            self.colour.black.0 ^= square.0;
+        } else if (self.colour.white.0 & square.0).count_ones() != 0 {
+            self.colour.white.0 ^= square.0;
+        }
+    }
+
+    pub fn get_colour(self, square: Bitboard) -> Colour {
+        if (self.colour.black.0 & square.0).count_ones() != 0 {
+            return Colour::Black;
+        } else if (self.colour.white.0 & square.0).count_ones() != 0 {
+            return Colour::White;
+        } else {
+            return Colour::None;
+        }
     }
     
     // Not very efficient, just need primitive for testing

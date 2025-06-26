@@ -5,7 +5,17 @@
 #[derive(PartialEq)]
 pub enum Colour {
     Black,
-    White
+    White,
+    None,
+}
+
+pub enum Role {
+    Pawn,
+    Knight,
+    Bishop,
+    Rook,
+    Queen,
+    King,
 }
 
 pub struct ByRole<T> {
