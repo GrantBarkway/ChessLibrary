@@ -6,7 +6,6 @@
 pub enum Colour {
     Black,
     White,
-    None,
 }
 
 pub enum Role {
@@ -15,7 +14,7 @@ pub enum Role {
     Bishop,
     Rook,
     Queen,
-    King,
+    King
 }
 
 pub struct ByRole<T> {

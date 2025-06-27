@@ -12,7 +12,7 @@ impl Move {
     pub fn new() -> Move {
         Move {
             target_square: Bitboard(0b10000000000000000),
-            from_square: Bitboard(0b100000000),
+            from_square: Bitboard(0b10),
         }
     }
 }

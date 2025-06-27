@@ -2,7 +2,7 @@
 #![allow(dead_code, unused_variables)]
 
 use crate::mv::Move;
-use crate::role::{Colour, ByRole, ByColour};
+use crate::role::{Colour, ByRole, ByColour, Role};
 
 // Bitboard read in order (by which bit is set)
 // {1,2,3,4,5,6,7,8}
@@ -47,41 +47,60 @@ impl Board {
     
     pub fn make_move(&mut self, mv: Move) {
         self.clear_square(mv.from_square);
-        self.occupied.0 ^= mv.target_square.0;
+        self.occupied.0 |= mv.target_square.0;
+        // Need to come up with way to return and access the specific role that a piece has without looping multiple times, same for colour
     }
     
     pub fn clear_square(&mut self, square: Bitboard) {
         
-        self.occupied.0 ^= square.0;
+        let square_bitboard_clear_bit = !square.0;
 
-        if (self.role.pawn.0 & square.0).count_ones() != 0 {
-            self.role.pawn.0 ^= square.0;
-        } else if (self.role.knight.0 & square.0).count_ones() != 0 {
-            self.role.knight.0 ^= square.0;
-        } else if (self.role.bishop.0 & square.0).count_ones() != 0 {
-            self.role.bishop.0 ^= square.0;
-        } else if (self.role.rook.0 & square.0).count_ones() != 0 {
-            self.role.rook.0 ^= square.0;
-        } else if (self.role.queen.0 & square.0).count_ones() != 0 {
-            self.role.queen.0 ^= square.0;
-        } else {
-            self.role.king.0 ^= square.0;
+        self.occupied.0 & square_bitboard_clear_bit;
+        
+        if let Some(square_role) = self.get_role(square) {
+            match square_role {
+                Role::Pawn => self.role.pawn.0 & square_bitboard_clear_bit,
+                Role::Knight => self.role.knight.0 & square_bitboard_clear_bit,
+                Role::Bishop => self.role.bishop.0 & square_bitboard_clear_bit,
+                Role::Rook => self.role.rook.0 & square_bitboard_clear_bit,
+                Role::Queen => self.role.queen.0 & square_bitboard_clear_bit,
+                Role::King => self.role.king.0 & square_bitboard_clear_bit
+            };
         }
         
-        if (self.colour.black.0 & square.0).count_ones() != 0 {
-            self.colour.black.0 ^= square.0;
-        } else if (self.colour.white.0 & square.0).count_ones() != 0 {
-            self.colour.white.0 ^= square.0;
+        if let Some(role_colour) = self.get_colour(square) {
+            match role_colour {
+                Colour::White => self.colour.white.0 & square_bitboard_clear_bit,
+                Colour::Black => self.colour.black.0 & square_bitboard_clear_bit,
+            };
         }
     }
 
-    pub fn get_colour(self, square: Bitboard) -> Colour {
+    pub fn get_colour(self, square: Bitboard) -> Option<Colour> {
         if (self.colour.black.0 & square.0).count_ones() != 0 {
-            return Colour::Black;
+            return Some(Colour::Black);
         } else if (self.colour.white.0 & square.0).count_ones() != 0 {
-            return Colour::White;
+            return Some(Colour::White);
         } else {
-            return Colour::None;
+            return None;
+        }
+    }
+
+    pub fn get_role(self, square: Bitboard) -> Option<Role> {
+        if (self.role.pawn.0 & square.0).count_ones() != 0 {
+            return Some(Role::Pawn);
+        } else if (self.role.knight.0 & square.0).count_ones() != 0 {
+            return Some(Role::Knight);
+        } else if (self.role.bishop.0 & square.0).count_ones() != 0 {
+            return Some(Role::Bishop);
+        } else if (self.role.rook.0 & square.0).count_ones() != 0 {
+            return Some(Role::Rook);
+        } else if (self.role.queen.0 & square.0).count_ones() != 0 {
+            return Some(Role::Queen);
+        } else if (self.role.king.0 & square.0).count_ones() != 0 {
+            return Some(Role::King);
+        } else {
+            return None;
         }
     }
     
