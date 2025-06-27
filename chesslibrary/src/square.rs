@@ -22,69 +22,67 @@ use crate::board::{Bitboard};
 // ...
 // {57,58,59,60,61,62,63,64}
 
-pub struct Square {
-    a8: Bitboard,
-    b8: Bitboard,
-    c8: Bitboard,
-    d8: Bitboard,
-    e8: Bitboard,
-    f8: Bitboard,
-    g8: Bitboard,
-    h8: Bitboard,
-    a7: Bitboard,
-    b7: Bitboard,
-    c7: Bitboard,
-    d7: Bitboard,
-    e7: Bitboard,
-    f7: Bitboard,
-    g7: Bitboard,
-    h7: Bitboard,
-    a6: Bitboard,
-    b6: Bitboard,
-    c6: Bitboard,
-    d6: Bitboard,
-    e6: Bitboard,
-    f6: Bitboard,
-    g6: Bitboard,
-    h6: Bitboard,  
-    a5: Bitboard,
-    b5: Bitboard,
-    c5: Bitboard,
-    d5: Bitboard,
-    e5: Bitboard,
-    f5: Bitboard,
-    g5: Bitboard,
-    h5: Bitboard,
-    a4: Bitboard,
-    b4: Bitboard,
-    c4: Bitboard,
-    d4: Bitboard,
-    e4: Bitboard,
-    f4: Bitboard,
-    g4: Bitboard,
-    h4: Bitboard,
-    a3: Bitboard,
-    b3: Bitboard,
-    c3: Bitboard,
-    d3: Bitboard,
-    e3: Bitboard,
-    f3: Bitboard,
-    g3: Bitboard,
-    h3: Bitboard, 
-    a2: Bitboard,
-    b2: Bitboard,
-    c2: Bitboard,
-    d2: Bitboard,
-    e2: Bitboard,
-    f2: Bitboard,
-    g2: Bitboard,
-    h2: Bitboard,
-    a1: Bitboard,
-    b1: Bitboard,
-    c1: Bitboard,
-    d1: Bitboard,
-    e1: Bitboard,
-    f1: Bitboard,
-    g1: Bitboard,
-    h1: Bitboard,
-}
+pub const A8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000000000);
+pub const B8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000000000);
+pub const C8: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000000000);
+pub const D8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000000);
+pub const E8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000000);
+pub const F8: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000000);
+pub const G8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000);
+pub const H8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000);
+pub const A7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000);
+pub const B7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000);
+pub const C7: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000);
+pub const D7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000);
+pub const E7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000);
+pub const F7: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000);
+pub const G7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000);
+pub const H7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000);
+pub const A6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000);
+pub const B6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000);
+pub const C6: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000);
+pub const D6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000);
+pub const E6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000);
+pub const F6: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000);
+pub const G6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000);
+pub const H6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000);
+pub const A5: Bitboard = Bitboard(0b1000000000000000000000000000000000000000);
+pub const B5: Bitboard = Bitboard(0b100000000000000000000000000000000000000);
+pub const C5: Bitboard = Bitboard(0b10000000000000000000000000000000000000);
+pub const D5: Bitboard = Bitboard(0b1000000000000000000000000000000000000);
+pub const E5: Bitboard = Bitboard(0b100000000000000000000000000000000000);
+pub const F5: Bitboard = Bitboard(0b10000000000000000000000000000000000);
+pub const G5: Bitboard = Bitboard(0b1000000000000000000000000000000000);
+pub const H5: Bitboard = Bitboard(0b100000000000000000000000000000000);
+pub const A4: Bitboard = Bitboard(0b10000000000000000000000000000000);
+pub const B4: Bitboard = Bitboard(0b1000000000000000000000000000000);
+pub const C4: Bitboard = Bitboard(0b100000000000000000000000000000);
+pub const D4: Bitboard = Bitboard(0b10000000000000000000000000000);
+pub const E4: Bitboard = Bitboard(0b1000000000000000000000000000);
+pub const F4: Bitboard = Bitboard(0b100000000000000000000000000);
+pub const G4: Bitboard = Bitboard(0b10000000000000000000000000);
+pub const H4: Bitboard = Bitboard(0b1000000000000000000000000);
+pub const A3: Bitboard = Bitboard(0b100000000000000000000000);
+pub const B3: Bitboard = Bitboard(0b10000000000000000000000);
+pub const C3: Bitboard = Bitboard(0b1000000000000000000000);
+pub const D3: Bitboard = Bitboard(0b100000000000000000000);
+pub const E3: Bitboard = Bitboard(0b10000000000000000000);
+pub const F3: Bitboard = Bitboard(0b1000000000000000000);
+pub const G3: Bitboard = Bitboard(0b100000000000000000);
+pub const H3: Bitboard = Bitboard(0b10000000000000000);
+pub const A2: Bitboard = Bitboard(0b1000000000000000);
+pub const B2: Bitboard = Bitboard(0b100000000000000);
+pub const C2: Bitboard = Bitboard(0b10000000000000);
+pub const D2: Bitboard = Bitboard(0b1000000000000);
+pub const E2: Bitboard = Bitboard(0b100000000000);
+pub const F2: Bitboard = Bitboard(0b10000000000);
+pub const G2: Bitboard = Bitboard(0b1000000000);
+pub const H2: Bitboard = Bitboard(0b100000000);
+pub const A1: Bitboard = Bitboard(0b10000000);
+pub const B1: Bitboard = Bitboard(0b1000000);
+pub const C1: Bitboard = Bitboard(0b100000);
+pub const D1: Bitboard = Bitboard(0b10000);
+pub const E1: Bitboard = Bitboard(0b1000);
+pub const F1: Bitboard = Bitboard(0b100);
+pub const G1: Bitboard = Bitboard(0b10);
+pub const H1: Bitboard = Bitboard(0b1);
