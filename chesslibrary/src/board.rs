@@ -2,9 +2,11 @@
 #![allow(dead_code, unused_variables)]
 
 use crate::mv::Move;
-use crate::role::{ByRole, Role, get_role};
-use crate::colour::{Colour, ByColour};
+use crate::role::{ByRole};
+use crate::colour::{ByColour};
 use crate::bitboard::Bitboard;
+
+#[derive(Debug)]
 
 // Bitboard read in order (by which bit is set)
 // {1,2,3,4,5,6,7,8}
@@ -20,7 +22,6 @@ pub struct Board {
     pub role: ByRole<Bitboard>,
     pub colour: ByColour<Bitboard>,
     pub occupied: Bitboard,
-    pub turn: Colour,
 }
 
 impl Board {
@@ -31,55 +32,23 @@ impl Board {
                 knight: Bitboard(0x4200_0000_0000_0042),
                 bishop: Bitboard(0x2400_0000_0000_0024),
                 rook: Bitboard(0x8100_0000_0000_0081),
-                queen: Bitboard(0x0800_0000_0000_0008),
-                king: Bitboard(0x1000_0000_0000_0010),
+                queen: Bitboard(0x1000_0000_0000_0010),
+                king: Bitboard(0x0800_0000_0000_0008),
             },
             colour: ByColour {
                 black: Bitboard(0xffff_0000_0000_0000),
                 white: Bitboard(0xffff),
             },
             occupied: Bitboard(0xffff_0000_0000_ffff),
-            turn: Colour::White,
         }
     }
     
     // Makes move on the board
     pub fn make_move(&mut self, mv: Move) {
-        
         self.clear_square(&mv.to_square);
-        
-        if let Some(square_role) = get_role(self, &mv.from_square) {
-            match square_role {
-                Role::Pawn => self.role.pawn.0 |= mv.to_square.0,
-                Role::Knight => self.role.knight.0 |= mv.to_square.0,
-                Role::Bishop => self.role.bishop.0 |= mv.to_square.0,
-                Role::Rook => self.role.rook.0 |= mv.to_square.0,
-                Role::Queen => self.role.queen.0 |= mv.to_square.0,
-                Role::King => self.role.king.0 |= mv.to_square.0
-            };
-        }
-
-        if let Some(from_colour) = self.get_colour(&mv.from_square) {
-            match from_colour {
-                Colour::White => self.colour.white.0 &= mv.to_square.0,
-                Colour::Black => self.colour.black.0 &= mv.to_square.0,
-            }
-        }
-        
+        self.set_square(&mv.to_square, &mv.role, &mv.colour);
         self.occupied.0 |= mv.to_square.0;
-        
         self.clear_square(&mv.from_square);
-    }
-    
-    // Gets the colour at a square
-    pub fn get_colour(&self, square: &Bitboard) -> Option<Colour> {
-        if (self.colour.black.0 & square.0).count_ones() != 0 {
-            return Some(Colour::Black);
-        } else if (self.colour.white.0 & square.0).count_ones() != 0 {
-            return Some(Colour::White);
-        } else {
-            return None;
-        }
     }
     
     // Not very efficient, just need primitive for testing

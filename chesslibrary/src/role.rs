@@ -14,6 +14,7 @@ pub enum Role {
     King
 }
 
+#[derive(Debug)]
 pub struct ByRole<T> {
     pub pawn: T,
     pub knight: T,

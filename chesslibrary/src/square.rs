@@ -3,7 +3,7 @@
 
 use crate::board::{Board};
 use crate::role::{Role, get_role};
-use crate::colour::Colour;
+use crate::colour::{Colour, get_colour};
 use crate::bitboard::Bitboard;
 
 // A8, B8, C8, D8, E8, F8, G8, H8,
@@ -113,11 +113,33 @@ impl Board {
             };
         }
         
-        if let Some(role_colour) = self.get_colour(&square) {
+        if let Some(role_colour) = get_colour(&self, &square) {
             match role_colour {
                 Colour::White => self.colour.white.0 &= square_bitboard_clear_bit,
                 Colour::Black => self.colour.black.0 &= square_bitboard_clear_bit,
             };
+        }
+    }
+
+    pub fn set_square(&mut self, square: &Bitboard, role: &Option<Role>, colour: &Option<Colour>) {
+        if let Some(role) = role {
+            match role {
+                Role::Pawn => self.role.pawn.0 |= square.0,
+                Role::Knight => self.role.knight.0 |= square.0,
+                Role::Bishop => self.role.bishop.0 |= square.0,
+                Role::Rook => self.role.rook.0 |= square.0,
+                Role::Queen => self.role.queen.0 |= square.0,
+                Role::King => self.role.king.0 |= square.0
+            };
+        }
+
+        self.occupied.0 |= square.0;
+        
+        if let Some(colour) = colour {
+            match colour {
+                Colour::White => self.colour.white.0 |= square.0,
+                Colour::Black => self.colour.black.0 |= square.0,
+            }
         }
     }
 }
