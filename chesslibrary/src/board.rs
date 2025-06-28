@@ -2,7 +2,9 @@
 #![allow(dead_code, unused_variables)]
 
 use crate::mv::Move;
-use crate::role::{Colour, ByRole, ByColour, Role};
+use crate::role::{ByRole, Role, get_role};
+use crate::colour::{Colour, ByColour};
+use crate::bitboard::Bitboard;
 
 // Bitboard read in order (by which bit is set)
 // {1,2,3,4,5,6,7,8}
@@ -14,14 +16,11 @@ use crate::role::{Colour, ByRole, ByColour, Role};
 // ...
 // {57,58,59,60,61,62,63,64}
 
-#[derive(Debug)]
-pub struct Bitboard(pub u64);
-
 pub struct Board {
-    role: ByRole<Bitboard>,
-    colour: ByColour<Bitboard>,
-    occupied: Bitboard,
-    turn: Colour,
+    pub role: ByRole<Bitboard>,
+    pub colour: ByColour<Bitboard>,
+    pub occupied: Bitboard,
+    pub turn: Colour,
 }
 
 impl Board {
@@ -46,56 +45,30 @@ impl Board {
     
     // Makes move on the board
     pub fn make_move(&mut self, mv: Move) {
-
-        self.clear_square(&mv.target_square);
         
-        if let Some(square_role) = self.get_role(&mv.from_square) {
+        self.clear_square(&mv.to_square);
+        
+        if let Some(square_role) = get_role(self, &mv.from_square) {
             match square_role {
-                Role::Pawn => self.role.pawn.0 |= mv.target_square.0,
-                Role::Knight => self.role.knight.0 |= mv.target_square.0,
-                Role::Bishop => self.role.bishop.0 |= mv.target_square.0,
-                Role::Rook => self.role.rook.0 |= mv.target_square.0,
-                Role::Queen => self.role.queen.0 |= mv.target_square.0,
-                Role::King => self.role.king.0 |= mv.target_square.0
+                Role::Pawn => self.role.pawn.0 |= mv.to_square.0,
+                Role::Knight => self.role.knight.0 |= mv.to_square.0,
+                Role::Bishop => self.role.bishop.0 |= mv.to_square.0,
+                Role::Rook => self.role.rook.0 |= mv.to_square.0,
+                Role::Queen => self.role.queen.0 |= mv.to_square.0,
+                Role::King => self.role.king.0 |= mv.to_square.0
             };
         }
 
         if let Some(from_colour) = self.get_colour(&mv.from_square) {
             match from_colour {
-                Colour::White => self.colour.white.0 &= mv.target_square.0,
-                Colour::Black => self.colour.black.0 &= mv.target_square.0,
+                Colour::White => self.colour.white.0 &= mv.to_square.0,
+                Colour::Black => self.colour.black.0 &= mv.to_square.0,
             }
         }
         
-        self.occupied.0 |= mv.target_square.0;
+        self.occupied.0 |= mv.to_square.0;
         
         self.clear_square(&mv.from_square);
-    }
-    
-    // Clears a specific square
-    pub fn clear_square(&mut self, square: &Bitboard) {
-        
-        let square_bitboard_clear_bit = !square.0;
-
-        self.occupied.0 &= square_bitboard_clear_bit;
-        
-        if let Some(square_role) = self.get_role(&square) {
-            match square_role {
-                Role::Pawn => self.role.pawn.0 &= square_bitboard_clear_bit,
-                Role::Knight => self.role.knight.0 &= square_bitboard_clear_bit,
-                Role::Bishop => self.role.bishop.0 &= square_bitboard_clear_bit,
-                Role::Rook => self.role.rook.0 &= square_bitboard_clear_bit,
-                Role::Queen => self.role.queen.0 &= square_bitboard_clear_bit,
-                Role::King => self.role.king.0 &= square_bitboard_clear_bit
-            };
-        }
-        
-        if let Some(role_colour) = self.get_colour(&square) {
-            match role_colour {
-                Colour::White => self.colour.white.0 &= square_bitboard_clear_bit,
-                Colour::Black => self.colour.black.0 &= square_bitboard_clear_bit,
-            };
-        }
     }
     
     // Gets the colour at a square
@@ -104,25 +77,6 @@ impl Board {
             return Some(Colour::Black);
         } else if (self.colour.white.0 & square.0).count_ones() != 0 {
             return Some(Colour::White);
-        } else {
-            return None;
-        }
-    }
-    
-    // Gets the role at a square
-    pub fn get_role(&self, square: &Bitboard) -> Option<Role> {
-        if (self.role.pawn.0 & square.0).count_ones() != 0 {
-            return Some(Role::Pawn);
-        } else if (self.role.knight.0 & square.0).count_ones() != 0 {
-            return Some(Role::Knight);
-        } else if (self.role.bishop.0 & square.0).count_ones() != 0 {
-            return Some(Role::Bishop);
-        } else if (self.role.rook.0 & square.0).count_ones() != 0 {
-            return Some(Role::Rook);
-        } else if (self.role.queen.0 & square.0).count_ones() != 0 {
-            return Some(Role::Queen);
-        } else if (self.role.king.0 & square.0).count_ones() != 0 {
-            return Some(Role::King);
         } else {
             return None;
         }

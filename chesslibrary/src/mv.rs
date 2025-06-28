@@ -1,18 +1,26 @@
 // Just while testing
 #![allow(dead_code, unused_variables)]
 
-use crate::board::{Bitboard};
+use crate::bitboard::Bitboard;
+use crate::role::{Role, get_role};
+use crate::board::Board;
+
+#[derive(Debug)]
 
 pub struct Move {
-    pub target_square: Bitboard,
+    pub role: Option<Role>,
+    pub to_square: Bitboard,
     pub from_square: Bitboard,
+    pub capture: Option<Role>,
 }
 
 impl Move {
-    pub fn new() -> Move {
+    pub fn new(board: &Board, from_square: &Bitboard, to_square: &Bitboard) -> Move {
         Move {
-            target_square: Bitboard(0b10000000000000000),
-            from_square: Bitboard(0b10),
+            role: if let Some(get_role) = get_role(board, &from_square) {Some(get_role)} else {None},
+            to_square: *to_square,
+            from_square: *from_square,
+            capture: None,
         }
     }
 }

@@ -1,7 +1,10 @@
 // Just while testing
 #![allow(dead_code, unused_variables)]
 
-use crate::board::{Bitboard};
+use crate::board::{Board};
+use crate::role::{Role, get_role};
+use crate::colour::Colour;
+use crate::bitboard::Bitboard;
 
 // A8, B8, C8, D8, E8, F8, G8, H8,
 // ...
@@ -22,67 +25,99 @@ use crate::board::{Bitboard};
 // ...
 // {57,58,59,60,61,62,63,64}
 
-pub const A8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000000000);
-pub const B8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000000000);
-pub const C8: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000000000);
-pub const D8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000000);
-pub const E8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000000);
-pub const F8: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000000);
-pub const G8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000);
-pub const H8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000);
-pub const A7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000);
-pub const B7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000);
-pub const C7: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000);
-pub const D7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000);
-pub const E7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000);
-pub const F7: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000);
-pub const G7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000);
-pub const H7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000);
-pub const A6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000);
-pub const B6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000);
-pub const C6: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000);
-pub const D6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000);
-pub const E6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000);
-pub const F6: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000);
-pub const G6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000);
-pub const H6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000);
-pub const A5: Bitboard = Bitboard(0b1000000000000000000000000000000000000000);
-pub const B5: Bitboard = Bitboard(0b100000000000000000000000000000000000000);
-pub const C5: Bitboard = Bitboard(0b10000000000000000000000000000000000000);
-pub const D5: Bitboard = Bitboard(0b1000000000000000000000000000000000000);
-pub const E5: Bitboard = Bitboard(0b100000000000000000000000000000000000);
-pub const F5: Bitboard = Bitboard(0b10000000000000000000000000000000000);
-pub const G5: Bitboard = Bitboard(0b1000000000000000000000000000000000);
-pub const H5: Bitboard = Bitboard(0b100000000000000000000000000000000);
-pub const A4: Bitboard = Bitboard(0b10000000000000000000000000000000);
-pub const B4: Bitboard = Bitboard(0b1000000000000000000000000000000);
-pub const C4: Bitboard = Bitboard(0b100000000000000000000000000000);
-pub const D4: Bitboard = Bitboard(0b10000000000000000000000000000);
-pub const E4: Bitboard = Bitboard(0b1000000000000000000000000000);
-pub const F4: Bitboard = Bitboard(0b100000000000000000000000000);
-pub const G4: Bitboard = Bitboard(0b10000000000000000000000000);
-pub const H4: Bitboard = Bitboard(0b1000000000000000000000000);
-pub const A3: Bitboard = Bitboard(0b100000000000000000000000);
-pub const B3: Bitboard = Bitboard(0b10000000000000000000000);
-pub const C3: Bitboard = Bitboard(0b1000000000000000000000);
-pub const D3: Bitboard = Bitboard(0b100000000000000000000);
-pub const E3: Bitboard = Bitboard(0b10000000000000000000);
-pub const F3: Bitboard = Bitboard(0b1000000000000000000);
-pub const G3: Bitboard = Bitboard(0b100000000000000000);
-pub const H3: Bitboard = Bitboard(0b10000000000000000);
-pub const A2: Bitboard = Bitboard(0b1000000000000000);
-pub const B2: Bitboard = Bitboard(0b100000000000000);
-pub const C2: Bitboard = Bitboard(0b10000000000000);
-pub const D2: Bitboard = Bitboard(0b1000000000000);
-pub const E2: Bitboard = Bitboard(0b100000000000);
-pub const F2: Bitboard = Bitboard(0b10000000000);
-pub const G2: Bitboard = Bitboard(0b1000000000);
-pub const H2: Bitboard = Bitboard(0b100000000);
-pub const A1: Bitboard = Bitboard(0b10000000);
-pub const B1: Bitboard = Bitboard(0b1000000);
-pub const C1: Bitboard = Bitboard(0b100000);
-pub const D1: Bitboard = Bitboard(0b10000);
-pub const E1: Bitboard = Bitboard(0b1000);
-pub const F1: Bitboard = Bitboard(0b100);
-pub const G1: Bitboard = Bitboard(0b10);
-pub const H1: Bitboard = Bitboard(0b1);
+pub struct Square;
+
+impl Square {
+    pub const A8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000000000);
+    pub const B8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000000000);
+    pub const C8: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000000000);
+    pub const D8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000000);
+    pub const E8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000000);
+    pub const F8: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000000);
+    pub const G8: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000000);
+    pub const H8: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000000);
+    pub const A7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000000);
+    pub const B7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000000);
+    pub const C7: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000000);
+    pub const D7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000000);
+    pub const E7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000000);
+    pub const F7: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000000);
+    pub const G7: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000000);
+    pub const H7: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000000);
+    pub const A6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000000);
+    pub const B6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000000);
+    pub const C6: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000000);
+    pub const D6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000000);
+    pub const E6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000000);
+    pub const F6: Bitboard = Bitboard(0b1000000000000000000000000000000000000000000);
+    pub const G6: Bitboard = Bitboard(0b100000000000000000000000000000000000000000);
+    pub const H6: Bitboard = Bitboard(0b10000000000000000000000000000000000000000);
+    pub const A5: Bitboard = Bitboard(0b1000000000000000000000000000000000000000);
+    pub const B5: Bitboard = Bitboard(0b100000000000000000000000000000000000000);
+    pub const C5: Bitboard = Bitboard(0b10000000000000000000000000000000000000);
+    pub const D5: Bitboard = Bitboard(0b1000000000000000000000000000000000000);
+    pub const E5: Bitboard = Bitboard(0b100000000000000000000000000000000000);
+    pub const F5: Bitboard = Bitboard(0b10000000000000000000000000000000000);
+    pub const G5: Bitboard = Bitboard(0b1000000000000000000000000000000000);
+    pub const H5: Bitboard = Bitboard(0b100000000000000000000000000000000);
+    pub const A4: Bitboard = Bitboard(0b10000000000000000000000000000000);
+    pub const B4: Bitboard = Bitboard(0b1000000000000000000000000000000);
+    pub const C4: Bitboard = Bitboard(0b100000000000000000000000000000);
+    pub const D4: Bitboard = Bitboard(0b10000000000000000000000000000);
+    pub const E4: Bitboard = Bitboard(0b1000000000000000000000000000);
+    pub const F4: Bitboard = Bitboard(0b100000000000000000000000000);
+    pub const G4: Bitboard = Bitboard(0b10000000000000000000000000);
+    pub const H4: Bitboard = Bitboard(0b1000000000000000000000000);
+    pub const A3: Bitboard = Bitboard(0b100000000000000000000000);
+    pub const B3: Bitboard = Bitboard(0b10000000000000000000000);
+    pub const C3: Bitboard = Bitboard(0b1000000000000000000000);
+    pub const D3: Bitboard = Bitboard(0b100000000000000000000);
+    pub const E3: Bitboard = Bitboard(0b10000000000000000000);
+    pub const F3: Bitboard = Bitboard(0b1000000000000000000);
+    pub const G3: Bitboard = Bitboard(0b100000000000000000);
+    pub const H3: Bitboard = Bitboard(0b10000000000000000);
+    pub const A2: Bitboard = Bitboard(0b1000000000000000);
+    pub const B2: Bitboard = Bitboard(0b100000000000000);
+    pub const C2: Bitboard = Bitboard(0b10000000000000);
+    pub const D2: Bitboard = Bitboard(0b1000000000000);
+    pub const E2: Bitboard = Bitboard(0b100000000000);
+    pub const F2: Bitboard = Bitboard(0b10000000000);
+    pub const G2: Bitboard = Bitboard(0b1000000000);
+    pub const H2: Bitboard = Bitboard(0b100000000);
+    pub const A1: Bitboard = Bitboard(0b10000000);
+    pub const B1: Bitboard = Bitboard(0b1000000);
+    pub const C1: Bitboard = Bitboard(0b100000);
+    pub const D1: Bitboard = Bitboard(0b10000);
+    pub const E1: Bitboard = Bitboard(0b1000);
+    pub const F1: Bitboard = Bitboard(0b100);
+    pub const G1: Bitboard = Bitboard(0b10);
+    pub const H1: Bitboard = Bitboard(0b1);
+}
+
+impl Board {
+    // Clears a specific square
+    pub fn clear_square(&mut self, square: &Bitboard) {
+        
+        let square_bitboard_clear_bit = !square.0;
+        
+        self.occupied.0 &= square_bitboard_clear_bit;
+        
+        if let Some(square_role) = get_role(self, &square) {
+            match square_role {
+                Role::Pawn => self.role.pawn.0 &= square_bitboard_clear_bit,
+                Role::Knight => self.role.knight.0 &= square_bitboard_clear_bit,
+                Role::Bishop => self.role.bishop.0 &= square_bitboard_clear_bit,
+                Role::Rook => self.role.rook.0 &= square_bitboard_clear_bit,
+                Role::Queen => self.role.queen.0 &= square_bitboard_clear_bit,
+                Role::King => self.role.king.0 &= square_bitboard_clear_bit
+            };
+        }
+        
+        if let Some(role_colour) = self.get_colour(&square) {
+            match role_colour {
+                Colour::White => self.colour.white.0 &= square_bitboard_clear_bit,
+                Colour::Black => self.colour.black.0 &= square_bitboard_clear_bit,
+            };
+        }
+    }
+}

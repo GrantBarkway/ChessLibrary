@@ -3,3 +3,6 @@ pub mod game;
 pub mod mv;
 pub mod square;
 pub mod role;
+pub mod movegen;
+pub mod colour;
+pub mod bitboard;
