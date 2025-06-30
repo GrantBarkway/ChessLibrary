@@ -6,17 +6,21 @@ use crate::colour::Colour;
 use crate::bitboard::Bitboard;
 use crate::mv::Move;
 
+const KNIGHT_ATTACKS: [Bitboard; 64] = [
+    Bitboard(0x0000000000020400), Bitboard(0x0000000000050800), Bitboard(0x00000000000a1100), Bitboard(0x0000000000142200), Bitboard(0x0000000000284400), Bitboard(0x0000000000508800), Bitboard(0x0000000000a01000), Bitboard(0x0000000000402000),
+    Bitboard(0x0000000002040004), Bitboard(0x0000000005080008), Bitboard(0x000000000a110011), Bitboard(0x0000000014220022), Bitboard(0x0000000028440044), Bitboard(0x0000000050880088), Bitboard(0x00000000a0100010), Bitboard(0x0000000040200020),
+    Bitboard(0x0000000204000402), Bitboard(0x0000000508000805), Bitboard(0x0000000a1100110a), Bitboard(0x0000001422002214), Bitboard(0x0000002844004428), Bitboard(0x0000005088008850), Bitboard(0x000000a0100010a0), Bitboard(0x0000004020002040),
+    Bitboard(0x0000020400040200), Bitboard(0x0000050800080500), Bitboard(0x00000a1100110a00), Bitboard(0x0000142200221400), Bitboard(0x0000284400442800), Bitboard(0x0000508800885000), Bitboard(0x0000a0100010a000), Bitboard(0x0000402000204000),
+    Bitboard(0x0002040004020000), Bitboard(0x0005080008050000), Bitboard(0x000a1100110a0000), Bitboard(0x0014220022140000), Bitboard(0x0028440044280000), Bitboard(0x0050880088500000), Bitboard(0x00a0100010a00000), Bitboard(0x0040200020400000),
+    Bitboard(0x0204000402000000), Bitboard(0x0508000805000000), Bitboard(0x0a1100110a000000), Bitboard(0x1422002214000000), Bitboard(0x2844004428000000), Bitboard(0x5088008850000000), Bitboard(0xa0100010a0000000), Bitboard(0x4020002040000000),
+    Bitboard(0x0400040200000000), Bitboard(0x0800080500000000), Bitboard(0x1100110a00000000), Bitboard(0x2200221400000000), Bitboard(0x4400442800000000), Bitboard(0x8800885000000000), Bitboard(0x100010a000000000), Bitboard(0x2000204000000000),
+    Bitboard(0x0004020000000000), Bitboard(0x0008050000000000), Bitboard(0x00110a0000000000), Bitboard(0x0022140000000000), Bitboard(0x0044280000000000), Bitboard(0x0088500000000000), Bitboard(0x0010a00000000000), Bitboard(0x0020400000000000)
+];
+
 const KING_MOVE_SHIFT: [i32; 8] = [
   -9, -8, -7,
   -1,      1,
    7,  8,  9];
-
-const KNIGHT_MOVE_SHIFT: [i32; 8] = [
-    -17, -15,
--10,         -6,
- 6,          10,
-     15,  17
-];
 
 pub fn get_legal_moves(board: Board, colour: Colour) -> Vec<Move> {
     let mut legal_moves: Vec<Move> = Vec::new();
@@ -58,13 +62,9 @@ pub fn get_knight_moves(board: &Board, colour: &Colour) -> Vec<Move> {
         Colour::White => (knight_bitboard, turn_colour) = (Bitboard(board.colour.white.0 & board.role.knight.0), board.colour.white),
         Colour::Black => (knight_bitboard, turn_colour) = (Bitboard(board.colour.black.0 & board.role.knight.0), board.colour.black),
     }
-    for knight in knight_bitboard.get_component_bitboards() {
-        for i in KNIGHT_MOVE_SHIFT {
-            let shifted_bit = knight.shift(i);
-            // Need to add if in check functionality eventually
-            if ((shifted_bit.0 & turn_colour.0) == 0) & (shifted_bit != Bitboard(0)) {
-                move_vector.push(Move::new(&board,&knight, &shifted_bit))
-            }
+    for individual_knight in knight_bitboard.get_component_bitboards() {
+        for knight_move in KNIGHT_ATTACKS[individual_knight.0.trailing_zeros() as usize].get_component_bitboards() {
+            move_vector.push(Move::new(&board, &individual_knight, &knight_move));
         }
     }
     return move_vector;
