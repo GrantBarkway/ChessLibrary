@@ -77,15 +77,15 @@ pub fn get_knight_moves(board: &Board, colour: &Colour) -> Vec<Move> {
 pub fn get_pawn_moves(board: &Board, colour: &Colour) -> Vec<Move> {
     let mut move_vector: Vec<Move> = Vec::new();
     let pawn_bitboard: Bitboard;
-    let starting_file: Bitboard;
+    let starting_rank: Bitboard;
     let move_shift: i32;
     match colour {
-        Colour::White => (pawn_bitboard, starting_file, move_shift) = (Bitboard(board.colour.white.0 & board.role.pawn.0), SECOND_RANK, 8),
-        Colour::Black => (pawn_bitboard, starting_file, move_shift) = (Bitboard(board.colour.black.0 & board.role.pawn.0), SEVENTH_RANK, -8),
+        Colour::White => (pawn_bitboard, starting_rank, move_shift) = (Bitboard(board.colour.white.0 & board.role.pawn.0), SECOND_RANK, 8),
+        Colour::Black => (pawn_bitboard, starting_rank, move_shift) = (Bitboard(board.colour.black.0 & board.role.pawn.0), SEVENTH_RANK, -8),
     }
     for individual_pawn in pawn_bitboard.get_component_bitboards() {
         let mut moved_pawn = individual_pawn;
-        if (moved_pawn.0 & starting_file.0).count_ones() != 0 {
+        if (moved_pawn.0 & starting_rank.0).count_ones() != 0 {
             moved_pawn = individual_pawn.shift(move_shift);
             if moved_pawn.0 & board.occupied.0 == 0 {
                 move_vector.push(Move::new(&board, &individual_pawn, &moved_pawn));
