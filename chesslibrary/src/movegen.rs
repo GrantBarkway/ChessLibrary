@@ -5,6 +5,7 @@ use crate::board::{Board};
 use crate::colour::Colour;
 use crate::bitboard::Bitboard;
 use crate::mv::Move;
+use crate::square::{SECOND_RANK, SEVENTH_RANK};
 
 const KNIGHT_ATTACKS: [Bitboard; 64] = [
     Bitboard(0x0000000000020400), Bitboard(0x0000000000050800), Bitboard(0x00000000000a1100), Bitboard(0x0000000000142200), Bitboard(0x0000000000284400), Bitboard(0x0000000000508800), Bitboard(0x0000000000a01000), Bitboard(0x0000000000402000),
@@ -24,7 +25,8 @@ const KING_MOVE_SHIFT: [i32; 8] = [
 
 pub fn get_legal_moves(board: Board, colour: Colour) -> Vec<Move> {
     let mut legal_moves: Vec<Move> = Vec::new();
-    //legal_moves.extend(get_king_moves(&board, &colour));
+    legal_moves.extend(get_king_moves(&board, &colour));
+    legal_moves.extend(get_pawn_moves(&board, &colour));
     legal_moves.extend(get_knight_moves(&board, &colour));
     return legal_moves;
 }
@@ -64,7 +66,34 @@ pub fn get_knight_moves(board: &Board, colour: &Colour) -> Vec<Move> {
     }
     for individual_knight in knight_bitboard.get_component_bitboards() {
         for knight_move in KNIGHT_ATTACKS[individual_knight.0.trailing_zeros() as usize].get_component_bitboards() {
-            move_vector.push(Move::new(&board, &individual_knight, &knight_move));
+            if (knight_move.0 & turn_colour.0) == 0 {
+                move_vector.push(Move::new(&board, &individual_knight, &knight_move));
+            }
+        }
+    }
+    return move_vector;
+}
+
+pub fn get_pawn_moves(board: &Board, colour: &Colour) -> Vec<Move> {
+    let mut move_vector: Vec<Move> = Vec::new();
+    let pawn_bitboard: Bitboard;
+    let starting_file: Bitboard;
+    let move_shift: i32;
+    match colour {
+        Colour::White => (pawn_bitboard, starting_file, move_shift) = (Bitboard(board.colour.white.0 & board.role.pawn.0), SECOND_RANK, 8),
+        Colour::Black => (pawn_bitboard, starting_file, move_shift) = (Bitboard(board.colour.black.0 & board.role.pawn.0), SEVENTH_RANK, -8),
+    }
+    for individual_pawn in pawn_bitboard.get_component_bitboards() {
+        let mut moved_pawn = individual_pawn;
+        if (moved_pawn.0 & starting_file.0).count_ones() != 0 {
+            moved_pawn = individual_pawn.shift(move_shift);
+            if moved_pawn.0 & board.occupied.0 == 0 {
+                move_vector.push(Move::new(&board, &individual_pawn, &moved_pawn));
+            }
+        }
+        moved_pawn = moved_pawn.shift(move_shift);
+        if (moved_pawn.0 & board.occupied.0) == 0 {
+            move_vector.push(Move::new(&board, &individual_pawn, &moved_pawn));
         }
     }
     return move_vector;
