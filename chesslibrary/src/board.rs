@@ -47,7 +47,7 @@ impl Board {
     pub fn make_move(&mut self, mv: Move) {
         self.clear_square(&mv.to_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
-        self.occupied.0 |= mv.to_square.0;
+        self.occupied |= &mv.to_square;
         self.clear_square(&mv.from_square);
     }
     
@@ -57,31 +57,31 @@ impl Board {
         for i in 0..8 {
             let mut rank = String::from("");
             for i in 0..8 {
-                if (self.occupied.0 & set_bit).count_ones() != 0 {
-                    if (self.colour.white.0 & set_bit).count_ones() != 0 {
-                        if (self.role.king.0 & set_bit).count_ones() != 0 {
+                if (self.occupied & set_bit).count_ones() != 0 {
+                    if (self.colour.white & set_bit).count_ones() != 0 {
+                        if (self.role.king & set_bit).count_ones() != 0 {
                             rank.push('k');
-                        } else if (self.role.queen.0 & set_bit).count_ones() != 0 {
+                        } else if (self.role.queen & set_bit).count_ones() != 0 {
                             rank.push('q');
-                        } else if (self.role.rook.0 & set_bit).count_ones() != 0 {
+                        } else if (self.role.rook & set_bit).count_ones() != 0 {
                             rank.push('r');
-                        } else if (self.role.bishop.0 & set_bit).count_ones() != 0 {
+                        } else if (self.role.bishop & set_bit).count_ones() != 0 {
                             rank.push('b');
-                        } else if (self.role.knight.0 & set_bit).count_ones() != 0 {
+                        } else if (self.role.knight & set_bit).count_ones() != 0 {
                             rank.push('n');
                         } else {
                             rank.push('p');
                         }
                     } else {
-                        if (self.role.king.0 & set_bit).count_ones() != 0 {
+                        if (self.role.king & set_bit).count_ones() != 0 {
                             rank.push('K');
-                        } else if (self.role.queen.0 & set_bit).count_ones() != 0 {
+                        } else if (self.role.queen & set_bit).count_ones() != 0 {
                             rank.push('Q');
-                        } else if (self.role.rook.0 & set_bit).count_ones() != 0 {
+                        } else if (self.role.rook & set_bit).count_ones() != 0 {
                             rank.push('R');
-                        } else if (self.role.bishop.0 & set_bit).count_ones() != 0 {
+                        } else if (self.role.bishop & set_bit).count_ones() != 0 {
                             rank.push('B');
-                        } else if (self.role.knight.0 & set_bit).count_ones() != 0 {
+                        } else if (self.role.knight & set_bit).count_ones() != 0 {
                             rank.push('N');
                         } else {
                             rank.push('P');

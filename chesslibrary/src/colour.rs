@@ -18,9 +18,9 @@ pub struct ByColour<T> {
 
  // Gets the colour at a square
 pub fn get_colour(board: &Board, square: &Bitboard) -> Option<Colour> {
-    if (board.colour.black.0 & square.0).count_ones() != 0 {
+    if (board.colour.black & square).count_ones() != 0 {
         return Some(Colour::Black);
-    } else if (board.colour.white.0 & square.0).count_ones() != 0 {
+    } else if (board.colour.white & square).count_ones() != 0 {
         return Some(Colour::White);
     } else {
         return None;

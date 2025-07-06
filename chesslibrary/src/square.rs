@@ -113,23 +113,23 @@ impl Board {
         
         let square_bitboard_clear_bit = !square.0;
         
-        self.occupied.0 &= square_bitboard_clear_bit;
+        self.occupied &= square_bitboard_clear_bit;
         
         if let Some(square_role) = get_role(self, &square) {
             match square_role {
-                Role::Pawn => self.role.pawn.0 &= square_bitboard_clear_bit,
-                Role::Knight => self.role.knight.0 &= square_bitboard_clear_bit,
-                Role::Bishop => self.role.bishop.0 &= square_bitboard_clear_bit,
-                Role::Rook => self.role.rook.0 &= square_bitboard_clear_bit,
-                Role::Queen => self.role.queen.0 &= square_bitboard_clear_bit,
-                Role::King => self.role.king.0 &= square_bitboard_clear_bit
+                Role::Pawn => self.role.pawn &= square_bitboard_clear_bit,
+                Role::Knight => self.role.knight &= square_bitboard_clear_bit,
+                Role::Bishop => self.role.bishop &= square_bitboard_clear_bit,
+                Role::Rook => self.role.rook &= square_bitboard_clear_bit,
+                Role::Queen => self.role.queen &= square_bitboard_clear_bit,
+                Role::King => self.role.king &= square_bitboard_clear_bit
             };
         }
         
         if let Some(role_colour) = get_colour(&self, &square) {
             match role_colour {
-                Colour::White => self.colour.white.0 &= square_bitboard_clear_bit,
-                Colour::Black => self.colour.black.0 &= square_bitboard_clear_bit,
+                Colour::White => self.colour.white &= square_bitboard_clear_bit,
+                Colour::Black => self.colour.black &= square_bitboard_clear_bit,
             };
         }
     }
@@ -137,21 +137,21 @@ impl Board {
     pub fn set_square(&mut self, square: &Bitboard, role: &Option<Role>, colour: &Option<Colour>) {
         if let Some(role) = role {
             match role {
-                Role::Pawn => self.role.pawn.0 |= square.0,
-                Role::Knight => self.role.knight.0 |= square.0,
-                Role::Bishop => self.role.bishop.0 |= square.0,
-                Role::Rook => self.role.rook.0 |= square.0,
-                Role::Queen => self.role.queen.0 |= square.0,
-                Role::King => self.role.king.0 |= square.0
+                Role::Pawn => self.role.pawn |= square,
+                Role::Knight => self.role.knight |= square,
+                Role::Bishop => self.role.bishop |= square,
+                Role::Rook => self.role.rook |= square,
+                Role::Queen => self.role.queen |= square,
+                Role::King => self.role.king |= square
             };
         }
-
+        
         self.occupied.0 |= square.0;
         
         if let Some(colour) = colour {
             match colour {
-                Colour::White => self.colour.white.0 |= square.0,
-                Colour::Black => self.colour.black.0 |= square.0,
+                Colour::White => self.colour.white |= square,
+                Colour::Black => self.colour.black |= square,
             }
         }
     }

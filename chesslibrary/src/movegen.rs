@@ -40,16 +40,16 @@ pub fn get_king_moves(board: &Board, colour: &Colour) -> Vec<Move> {
     let king_bitboard: Bitboard;
     let turn_colour: Bitboard;
     match colour {
-        Colour::White => (king_bitboard, turn_colour) = (Bitboard(board.colour.white.0 & board.role.king.0), board.colour.white),
-        Colour::Black => (king_bitboard, turn_colour) = (Bitboard(board.colour.black.0 & board.role.king.0), board.colour.black),
+        Colour::White => (king_bitboard, turn_colour) = (board.colour.white & board.role.king, board.colour.white),
+        Colour::Black => (king_bitboard, turn_colour) = (board.colour.black & board.role.king, board.colour.black),
     }
-    eprintln!("{:?}", board.role.king.0);
-    eprintln!("{:?}", board.colour.white.0);
-    eprintln!("{:?}", (board.role.king.0 & board.colour.white.0));
+    eprintln!("{:?}", board.role.king);
+    eprintln!("{:?}", board.colour.white);
+    eprintln!("{:?}", (board.role.king & board.colour.white));
     for i in KING_MOVE_SHIFT {
         let shifted_bit = king_bitboard.shift(i);
         // Need to add if in check functionality eventually
-        if ((shifted_bit.0 & turn_colour.0) == 0) & (shifted_bit != Bitboard(0)) {
+        if ((shifted_bit & turn_colour).count_ones() == 0) & (shifted_bit != Bitboard(0)) {
             move_vector.push(Move::new(&board,&king_bitboard, &shifted_bit))
         }
     }
@@ -61,12 +61,12 @@ pub fn get_knight_moves(board: &Board, colour: &Colour) -> Vec<Move> {
     let knight_bitboard: Bitboard;
     let turn_colour: Bitboard;
     match colour {
-        Colour::White => (knight_bitboard, turn_colour) = (Bitboard(board.colour.white.0 & board.role.knight.0), board.colour.white),
-        Colour::Black => (knight_bitboard, turn_colour) = (Bitboard(board.colour.black.0 & board.role.knight.0), board.colour.black),
+        Colour::White => (knight_bitboard, turn_colour) = (board.colour.white & board.role.knight, board.colour.white),
+        Colour::Black => (knight_bitboard, turn_colour) = (board.colour.black & board.role.knight, board.colour.black),
     }
     for individual_knight in knight_bitboard.get_component_bitboards() {
         for knight_move in KNIGHT_ATTACKS[individual_knight.0.trailing_zeros() as usize].get_component_bitboards() {
-            if (knight_move.0 & turn_colour.0) == 0 {
+            if (knight_move & turn_colour).count_ones() == 0 {
                 move_vector.push(Move::new(&board, &individual_knight, &knight_move));
             }
         }
@@ -80,19 +80,19 @@ pub fn get_pawn_moves(board: &Board, colour: &Colour) -> Vec<Move> {
     let starting_rank: Bitboard;
     let move_shift: i32;
     match colour {
-        Colour::White => (pawn_bitboard, starting_rank, move_shift) = (Bitboard(board.colour.white.0 & board.role.pawn.0), SECOND_RANK, 8),
-        Colour::Black => (pawn_bitboard, starting_rank, move_shift) = (Bitboard(board.colour.black.0 & board.role.pawn.0), SEVENTH_RANK, -8),
+        Colour::White => (pawn_bitboard, starting_rank, move_shift) = ((board.colour.white & board.role.pawn), SECOND_RANK, 8),
+        Colour::Black => (pawn_bitboard, starting_rank, move_shift) = ((board.colour.black & board.role.pawn), SEVENTH_RANK, -8),
     }
     for individual_pawn in pawn_bitboard.get_component_bitboards() {
         let mut moved_pawn = individual_pawn;
-        if (moved_pawn.0 & starting_rank.0).count_ones() != 0 {
+        if (moved_pawn & starting_rank).count_ones() != 0 {
             moved_pawn = individual_pawn.shift(move_shift);
-            if moved_pawn.0 & board.occupied.0 == 0 {
+            if (moved_pawn & board.occupied).count_ones() == 0 {
                 move_vector.push(Move::new(&board, &individual_pawn, &moved_pawn));
             }
         }
         moved_pawn = moved_pawn.shift(move_shift);
-        if (moved_pawn.0 & board.occupied.0) == 0 {
+        if (moved_pawn & board.occupied).count_ones() == 0 {
             move_vector.push(Move::new(&board, &individual_pawn, &moved_pawn));
         }
     }
