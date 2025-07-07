@@ -10,8 +10,8 @@ fn main() {
     let mut board = Board::new();
     let mov = Move::new(&board,&Square::E2, &Square::E4);
     board.make_move(mov);
-    //let king_e2 = Move::new(&board, &Square::E1, &Square::E2);
-    //board.make_move(king_e2);
+    let king_e2 = Move::new(&board, &Square::E1, &Square::E2);
+    board.make_move(king_e2);
     board.display_board();
     for i in get_legal_moves(board, Colour::White) {
         println!("{:?}", i);

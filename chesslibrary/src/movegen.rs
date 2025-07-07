@@ -5,7 +5,7 @@ use crate::board::{Board};
 use crate::colour::Colour;
 use crate::bitboard::Bitboard;
 use crate::mv::Move;
-use crate::square::{SECOND_RANK, SEVENTH_RANK};
+use crate::square::{EIGHTH_RANK, FILE_A, FILE_H, FIRST_RANK, SECOND_RANK, SEVENTH_RANK};
 
 const KNIGHT_ATTACKS: [Bitboard; 64] = [
     Bitboard(0x0000000000020400), Bitboard(0x0000000000050800), Bitboard(0x00000000000a1100), Bitboard(0x0000000000142200), Bitboard(0x0000000000284400), Bitboard(0x0000000000508800), Bitboard(0x0000000000a01000), Bitboard(0x0000000000402000),
@@ -39,20 +39,29 @@ pub fn get_king_moves(board: &Board, colour: &Colour) -> Vec<Move> {
     let mut move_vector: Vec<Move> = Vec::new();
     let king_bitboard: Bitboard;
     let turn_colour: Bitboard;
+    let mut move_bitboard: Bitboard = Bitboard(0);
     match colour {
         Colour::White => (king_bitboard, turn_colour) = (board.colour.white & board.role.king, board.colour.white),
         Colour::Black => (king_bitboard, turn_colour) = (board.colour.black & board.role.king, board.colour.black),
     }
-    eprintln!("{:?}", board.role.king);
-    eprintln!("{:?}", board.colour.white);
-    eprintln!("{:?}", (board.role.king & board.colour.white));
-    for i in KING_MOVE_SHIFT {
-        let shifted_bit = king_bitboard.shift(i);
-        // Need to add if in check functionality eventually
-        if ((shifted_bit & turn_colour).count_ones() == 0) & (shifted_bit != Bitboard(0)) {
-            move_vector.push(Move::new(&board,&king_bitboard, &shifted_bit))
+    
+    move_bitboard |= (king_bitboard & !FILE_A).shift(1);
+    move_bitboard |= (king_bitboard & !FILE_H).shift(-1);
+    move_bitboard |= (king_bitboard & !FIRST_RANK).shift(-8);
+    move_bitboard |= (king_bitboard & !EIGHTH_RANK).shift(8);
+    
+    move_bitboard |= (king_bitboard & !(FILE_A|FIRST_RANK)).shift(-7);
+    move_bitboard |= (king_bitboard & !(FILE_A|EIGHTH_RANK)).shift(9);
+    move_bitboard |= (king_bitboard & !(FILE_H|FIRST_RANK)).shift(-9);
+    move_bitboard |= (king_bitboard & !(FILE_H|EIGHTH_RANK)).shift(7);
+    
+    // Need to also add checks for if the square is attacked
+    for single_move in move_bitboard.get_component_bitboards() {
+        if (single_move & turn_colour).count_ones() == 0 {
+            move_vector.push(Move::new(&board, &king_bitboard, &single_move));
         }
     }
+
     return move_vector;
 }
 

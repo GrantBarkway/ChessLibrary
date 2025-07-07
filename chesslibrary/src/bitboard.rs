@@ -2,7 +2,7 @@
 #![allow(dead_code, unused_variables)]
 
 use std::fmt;
-use std::ops::{BitAnd, BitAndAssign, BitOrAssign};
+use std::ops::{BitAnd, BitAndAssign, BitOrAssign, Not, BitOr};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Bitboard(pub u64);
@@ -72,8 +72,34 @@ impl BitAndAssign<u64> for Bitboard {
     }
 }
 
+impl BitAndAssign for Bitboard {
+    fn bitand_assign(&mut self, rhs: Bitboard) {
+        *self = Self(self.0 & rhs.0)
+    }
+}
+
+impl BitOr for Bitboard {
+    type Output = Bitboard;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Self(self.0 | rhs.0)
+    }
+}
+
 impl BitOrAssign<&Bitboard> for Bitboard {
     fn bitor_assign(&mut self, rhs: &Bitboard) {
         self.0 |= rhs.0
+    }
+}
+
+impl BitOrAssign<Bitboard> for Bitboard {
+    fn bitor_assign(&mut self, rhs: Bitboard) {
+        self.0 |= rhs.0
+    }
+}
+
+impl Not for Bitboard {
+    type Output = Bitboard;
+    fn not(self) -> Self::Output {
+        Bitboard(!self.0)
     }
 }

@@ -104,8 +104,10 @@ pub const FILE_G: Bitboard = Bitboard(0b0000001000000010000000100000001000000010
 pub const FILE_H: Bitboard = Bitboard(0b0000000100000001000000010000000100000001000000010000000100000001);
 
 //Need to clean up to make prettier
+pub const FIRST_RANK: Bitboard = Bitboard(0b0000000000000000000000000000000000000000000000000000000011111111);
 pub const SECOND_RANK: Bitboard = Bitboard(Square::A2.0 | Square::B2.0 | Square::C2.0 | Square::D2.0 | Square::E2.0 | Square::F2.0 | Square::G2.0 | Square::H2.0);
 pub const SEVENTH_RANK: Bitboard = Bitboard(Square::A7.0 | Square::B7.0 | Square::C7.0 | Square::D7.0 | Square::E7.0 | Square::F7.0 | Square::G7.0 | Square::H7.0);
+pub const EIGHTH_RANK: Bitboard = Bitboard(0b1111111100000000000000000000000000000000000000000000000000000000);
 
 impl Board {
     // Clears a specific square
