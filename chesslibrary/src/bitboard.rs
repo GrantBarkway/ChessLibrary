@@ -1,37 +1,24 @@
-// Just while testing
-#![allow(dead_code, unused_variables)]
-
 use std::fmt;
-use std::ops::{BitAnd, BitAndAssign, BitOrAssign, Not, BitOr};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, Shr};
 use crate::square::{EIGHTH_RANK, FIFTH_RANK, FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FIRST_RANK, FOURTH_RANK, SECOND_RANK, SEVENTH_RANK, SIXTH_RANK, THIRD_RANK};
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+
+// USING CLONE AND COPY UNINTENTIONALLY LOTS, MAKING CODE SLOW. NEED TO FIX
+
 pub struct Bitboard(pub u64);
 
 pub const EMPTY_BITBOARD: Bitboard = Bitboard(0);
 
 impl Bitboard {
-    // Credit to Shakmaty for this function code
-    pub const fn shift(&self, offset: i32) -> Bitboard {
-        Bitboard(if offset > 63 {
-            0
-        } else if offset >= 0 {
-            self.0 << offset
-        } else if offset >= -63 {
-            self.0 >> -offset
-        } else {
-            0
-        })
-    }
-    
     // Splits a bitboard with multiple 1s into a vector of component bitboards containing only one 1 in it
     pub fn get_component_bitboards(&self) -> Vec<Bitboard> {
         let mut bitboard_vector = Vec::new();
-        let bit_mask = Bitboard(1);
+        let mut bit_mask = Bitboard(1);
         for i in 0..64 {
-            let shifted = bit_mask.shift(i);
-            if (shifted & self).count_ones() != 0 {
-                bitboard_vector.push(shifted);
+            bit_mask = bit_mask << 1;
+            if (bit_mask & self) != EMPTY_BITBOARD {
+                bitboard_vector.push(bit_mask);
             }
         }
         return bitboard_vector;
@@ -46,39 +33,39 @@ impl Bitboard {
 pub fn bitboard_to_string_move(sq: Bitboard) -> String {
     let mut move_as_string = String::new();
     
-    if (sq & FILE_A).count_ones() != 0 {
+    if (&sq & FILE_A).count_ones() != 0 {
         move_as_string.push_str("A");
-    } else if (sq & FILE_B).count_ones() != 0 {
+    } else if (&sq & FILE_B).count_ones() != 0 {
         move_as_string.push_str("B");
-    } else if (sq & FILE_C).count_ones() != 0 {
+    } else if (&sq & FILE_C).count_ones() != 0 {
         move_as_string.push_str("C");
-    } else if (sq & FILE_D).count_ones() != 0 {
+    } else if (&sq & FILE_D).count_ones() != 0 {
         move_as_string.push_str("D");
-    } else if (sq & FILE_E).count_ones() != 0 {
+    } else if (&sq & FILE_E).count_ones() != 0 {
         move_as_string.push_str("E");
-    } else if (sq & FILE_F).count_ones() != 0 {
+    } else if (&sq & FILE_F).count_ones() != 0 {
         move_as_string.push_str("F");
-    } else if (sq & FILE_G).count_ones() != 0 {
+    } else if (&sq & FILE_G).count_ones() != 0 {
         move_as_string.push_str("G");
-    } else if (sq & FILE_H).count_ones() != 0 {
+    } else if (&sq & FILE_H).count_ones() != 0 {
         move_as_string.push_str("H");
     }
     
-    if (sq & FIRST_RANK).count_ones() != 0 {
+    if (&sq & FIRST_RANK).count_ones() != 0 {
         move_as_string.push_str("1");
-    } else if (sq & SECOND_RANK).count_ones() != 0 {
+    } else if (&sq & SECOND_RANK).count_ones() != 0 {
         move_as_string.push_str("2");
-    } else if (sq & THIRD_RANK).count_ones() != 0 {
+    } else if (&sq & THIRD_RANK).count_ones() != 0 {
         move_as_string.push_str("3");
-    } else if (sq & FOURTH_RANK).count_ones() != 0 {
+    } else if (&sq & FOURTH_RANK).count_ones() != 0 {
         move_as_string.push_str("4");
-    } else if (sq & FIFTH_RANK).count_ones() != 0 {
+    } else if (&sq & FIFTH_RANK).count_ones() != 0 {
         move_as_string.push_str("5");
-    } else if (sq & SIXTH_RANK).count_ones() != 0 {
+    } else if (&sq & SIXTH_RANK).count_ones() != 0 {
         move_as_string.push_str("6");
-    } else if (sq & SEVENTH_RANK).count_ones() != 0 {
+    } else if (&sq & SEVENTH_RANK).count_ones() != 0 {
         move_as_string.push_str("7");
-    } else if (sq & EIGHTH_RANK).count_ones() != 0 {
+    } else if (&sq & EIGHTH_RANK).count_ones() != 0 {
         move_as_string.push_str("8");
     }
 
@@ -88,6 +75,40 @@ pub fn bitboard_to_string_move(sq: Bitboard) -> String {
 impl fmt::Display for Bitboard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl Eq for Bitboard {}
+
+impl Shl<i32> for Bitboard {
+    type Output = Self;
+    
+    fn shl(self, rhs: i32) -> Self::Output {
+        let Self(lhs) = self;
+        Self(lhs << rhs)
+    }
+}
+
+impl Shr<i32> for Bitboard {
+    type Output = Self;
+        
+    fn shr(self, rhs: i32) -> Self::Output {
+        let Self(lhs) = self;
+        Self(lhs >> rhs)
+    }
+}
+
+impl BitAnd for &Bitboard {
+    type Output = Bitboard;
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Bitboard(self.0 & rhs.0)
+    }
+}
+
+impl BitAnd<Bitboard> for &Bitboard {
+    type Output = Bitboard;
+    fn bitand(self, rhs: Bitboard) -> Self::Output {
+        Bitboard(self.0 & rhs.0)
     }
 }
 
@@ -106,9 +127,9 @@ impl BitAnd<u64> for Bitboard {
 }
 
 impl BitAnd<&Bitboard> for Bitboard {
-    type Output = u64;
+    type Output = Self;
     fn bitand(self, rhs: &Bitboard) -> Self::Output {
-        self.0 & rhs.0
+        Self(self.0 & rhs.0)
     }
 }
 

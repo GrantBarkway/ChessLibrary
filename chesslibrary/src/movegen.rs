@@ -41,15 +41,15 @@ pub fn get_king_moves(board: &Board, colour: &Colour) -> Vec<Move> {
         Colour::Black => (king_bitboard, turn_colour) = (board.colour.black & board.role.king, board.colour.black),
     }
     
-    move_bitboard |= (king_bitboard & !FILE_A).shift(1);
-    move_bitboard |= (king_bitboard & !FILE_H).shift(-1);
-    move_bitboard |= (king_bitboard & !FIRST_RANK).shift(-8);
-    move_bitboard |= (king_bitboard & !EIGHTH_RANK).shift(8);
+    move_bitboard |= (king_bitboard & !FILE_A) << 1;
+    move_bitboard |= (king_bitboard & !FILE_H) >> 1;
+    move_bitboard |= (king_bitboard & !FIRST_RANK) >> 8;
+    move_bitboard |= (king_bitboard & !EIGHTH_RANK) << 8;
     
-    move_bitboard |= (king_bitboard & !(FILE_A|FIRST_RANK)).shift(-7);
-    move_bitboard |= (king_bitboard & !(FILE_A|EIGHTH_RANK)).shift(9);
-    move_bitboard |= (king_bitboard & !(FILE_H|FIRST_RANK)).shift(-9);
-    move_bitboard |= (king_bitboard & !(FILE_H|EIGHTH_RANK)).shift(7);
+    move_bitboard |= (king_bitboard & !(FILE_A|FIRST_RANK)) >> 7;
+    move_bitboard |= (king_bitboard & !(FILE_A|EIGHTH_RANK)) << 9;
+    move_bitboard |= (king_bitboard & !(FILE_H|FIRST_RANK)) >> 9;
+    move_bitboard |= (king_bitboard & !(FILE_H|EIGHTH_RANK)) << 7;
     
     // Need to also add checks for if the square is attacked
     for single_move in move_bitboard.get_component_bitboards() {
@@ -77,20 +77,20 @@ pub fn get_pawn_moves(board: &Board, colour: &Colour) -> Vec<Move> {
     
     for single_pawn in pawn_bitboard.get_component_bitboards() {
         
-        let mut attack_moves = single_pawn.shift(a_file_attack_shift);
+        let mut attack_moves = single_pawn << a_file_attack_shift;
         if (attack_moves & !FILE_A & opponent_colour) != EMPTY_BITBOARD {
             move_vector.push(Move::new(&board, &single_pawn, &attack_moves));
         }
-        attack_moves = single_pawn.shift(h_file_attack_shift);
+        attack_moves = single_pawn << h_file_attack_shift;
         if (attack_moves & !FILE_H & opponent_colour) != EMPTY_BITBOARD {
             move_vector.push(Move::new(&board, &single_pawn, &attack_moves));
         }
 
         // Single and double pawn moves
-        let mut moved_pawn = single_pawn.shift(forward_shift);
+        let mut moved_pawn = single_pawn << forward_shift;
         if (moved_pawn & !board.occupied) != EMPTY_BITBOARD {
             move_vector.push(Move::new(&board, &single_pawn, &moved_pawn));
-            moved_pawn = moved_pawn.shift(forward_shift);
+            moved_pawn = moved_pawn << forward_shift;
             if ((single_pawn & starting_rank) != EMPTY_BITBOARD) & ((moved_pawn & !board.occupied) != EMPTY_BITBOARD) {
                 move_vector.push(Move::new(&board, &single_pawn, &moved_pawn));
             }
