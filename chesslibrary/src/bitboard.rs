@@ -3,19 +3,18 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, Shr};
 use crate::square::{EIGHTH_RANK, FIFTH_RANK, FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FIRST_RANK, FOURTH_RANK, SECOND_RANK, SEVENTH_RANK, SIXTH_RANK, THIRD_RANK};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-
-// USING CLONE AND COPY UNINTENTIONALLY LOTS, MAKING CODE SLOW. NEED TO FIX
-
 pub struct Bitboard(pub u64);
 
 pub const EMPTY_BITBOARD: Bitboard = Bitboard(0);
+
+// NEED TO OPTIMIZE GET_COMPONENT_BITBOARDS
 
 impl Bitboard {
     // Splits a bitboard with multiple 1s into a vector of component bitboards containing only one 1 in it
     pub fn get_component_bitboards(&self) -> Vec<Bitboard> {
         let mut bitboard_vector = Vec::new();
         let mut bit_mask = Bitboard(1);
-        for i in 0..64 {
+        for _i in 0..64 {
             bit_mask = bit_mask << 1;
             if (bit_mask & self) != EMPTY_BITBOARD {
                 bitboard_vector.push(bit_mask);
@@ -23,9 +22,57 @@ impl Bitboard {
         }
         return bitboard_vector;
     }
-
+    
     pub fn count_ones(&self) -> u32 {
         return self.0.count_ones();
+    }
+    
+    pub fn trailing_zeros(&self) -> i32 {
+        return self.0.trailing_zeros() as i32;
+    }
+    
+    pub fn get_file(self) -> Bitboard {
+        if self & FILE_A != EMPTY_BITBOARD {
+            return FILE_A
+        } else if self & FILE_B != EMPTY_BITBOARD {
+            return FILE_B
+        } else if self & FILE_C != EMPTY_BITBOARD {
+            return FILE_C
+        } else if self & FILE_D != EMPTY_BITBOARD {
+            return FILE_D
+        } else if self & FILE_E != EMPTY_BITBOARD {
+            return FILE_E
+        } else if self & FILE_F != EMPTY_BITBOARD {
+            return FILE_F
+        } else if self & FILE_G != EMPTY_BITBOARD {
+            return FILE_G
+        } else if self & FILE_H != EMPTY_BITBOARD {
+            return FILE_H
+        } else {
+            return EMPTY_BITBOARD;
+        }
+    }
+    
+    pub fn get_rank(self) -> Bitboard {
+        if self & FIRST_RANK != EMPTY_BITBOARD {
+            return FIRST_RANK
+        } else if self & SECOND_RANK != EMPTY_BITBOARD {
+            return SECOND_RANK
+        } else if self & THIRD_RANK != EMPTY_BITBOARD {
+            return THIRD_RANK
+        } else if self & FOURTH_RANK != EMPTY_BITBOARD {
+            return FOURTH_RANK
+        } else if self & FIFTH_RANK != EMPTY_BITBOARD {
+            return FIFTH_RANK
+        } else if self & SIXTH_RANK != EMPTY_BITBOARD {
+            return SIXTH_RANK
+        } else if self & SEVENTH_RANK != EMPTY_BITBOARD {
+            return SEVENTH_RANK
+        } else if self & EIGHTH_RANK != EMPTY_BITBOARD {
+            return EIGHTH_RANK
+        } else {
+            return EMPTY_BITBOARD
+        }
     }
 }
 

@@ -4,7 +4,7 @@
 use crate::board::{Board};
 use crate::role::{Role, get_role};
 use crate::colour::{Colour, get_colour};
-use crate::bitboard::Bitboard;
+use crate::bitboard::{Bitboard};
 
 // A8, B8, C8, D8, E8, F8, G8, H8,
 // ...

@@ -27,6 +27,14 @@ enum File {
     H
 }
 
+pub const EMPTY_MOVE: Move = Move {
+    role: None,
+    colour: None,
+    from_square: Bitboard(0),
+    to_square: Bitboard(0),
+    capture: None
+};
+
 #[derive(Debug)]
 pub struct Move {
     pub role: Option<Role>,

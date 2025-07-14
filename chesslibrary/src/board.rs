@@ -7,16 +7,10 @@ use crate::colour::{ByColour};
 use crate::bitboard::Bitboard;
 
 #[derive(Debug)]
-
-// Bitboard read in order (by which bit is set)
-// {1, 2, 3, 4, 5, 6, 7, 8}
-// {9,10,11,12,13,14,15,16}
-// {17,18,19,20,21,22,23,24}
-// ...
-// ...
-// ...
-// ...
-// {57,58,59,60,61,62,63,64}
+// Order of board
+// ....
+//0b1000000000000000,0b100000000000000,0b10000000000000,0b1000000000000,0b100000000000,0b10000000000,0b1000000000,0b100000000
+//0b10000000,0b1000000,0b100000,0b10000,0b1000,0b100,0b10,0b1
 
 pub struct Board {
     pub role: ByRole<Bitboard>,
