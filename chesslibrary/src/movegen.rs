@@ -5,7 +5,7 @@ use crate::board::{Board};
 use crate::colour::Colour;
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::mv::Move;
-use crate::square::{EIGHTH_RANK, FILE_A, FILE_H, FIRST_RANK, SECOND_RANK, SEVENTH_RANK};
+use crate::square::{ALL_SQUARES, EIGHTH_RANK, FILE_A, FILE_H, FIRST_RANK, SECOND_RANK, SEVENTH_RANK};
 
 // H1, G1, F1, E1, D1, C1, B1, A1
 // H2 ...
@@ -32,6 +32,81 @@ const ROOK_MASKS: [Bitboard; 64] = [
     Bitboard(18302911464433844481), Bitboard(18231136449196065282), Bitboard(18087586418720506884), Bitboard(17800486357769390088), Bitboard(17226286235867156496), Bitboard(16077885992062689312), Bitboard(13781085504453754944), Bitboard(9187484529235886208)
 ];
 
+const ROOK_MAGICS: [u64; 64] = [
+  0x2080020500400f0,
+  0x28444000400010,
+  0x20000a1004100014,
+  0x20010c090202006,
+  0x8408008200810004,
+  0x1746000808002,
+  0x2200098000808201,
+  0x12c0002080200041,
+  0x104000208e480804,
+  0x8084014008281008,
+  0x4200810910500410,
+  0x100014481c20400c,
+  0x4014a4040020808,
+  0x401002001010a4,
+  0x202000500010001,
+  0x8112808005810081,
+  0x40902108802020,
+  0x42002101008101,
+  0x459442200810c202,
+  0x81001103309808,
+  0x8110000080102,
+  0x8812806008080404,
+  0x104020000800101,
+  0x40a1048000028201,
+  0x4100ba0000004081,
+  0x44803a4003400109,
+  0xa010a00000030443,
+  0x91021a000100409,
+  0x4201e8040880a012,
+  0x22a000440201802,
+  0x30890a72000204,
+  0x10411402a0c482,
+  0x40004841102088,
+  0x40230000100040,
+  0x40100010000a0488,
+  0x1410100200050844,
+  0x100090808508411,
+  0x1410040024001142,
+  0x8840018001214002,
+  0x410201000098001,
+  0x8400802120088848,
+  0x2060080000021004,
+  0x82101002000d0022,
+  0x1001101001008241,
+  0x9040411808040102,
+  0x600800480009042,
+  0x1a020000040205,
+  0x4200404040505199,
+  0x2020081040080080,
+  0x40a3002000544108,
+  0x4501100800148402,
+  0x81440280100224,
+  0x88008000000804,
+  0x8084060000002812,
+  0x1840201000108312,
+  0x5080202000000141,
+  0x1042a180880281,
+  0x900802900c01040,
+  0x8205104104120,
+  0x9004220000440a,
+  0x8029510200708,
+  0x8008440100404241,
+  0x2420001111000bd,
+  0x4000882304000041,
+];
+
+const ROOK_ATTACKS: [[Bitboard; 64]; 4096] = [[Bitboard(0); 64]; 4096];
+
+pub const fn init_rook_attacks() {
+    for single_square in ALL_SQUARES {
+        
+    }
+}
+
 // Gets rook masks for each square (includes edges)
 pub fn get_rook_masks(square: Bitboard) -> Bitboard {
     let mut rook_masks = Bitboard(0);
@@ -50,12 +125,8 @@ pub fn get_legal_moves(board: &Board, colour: Colour) -> Vec<Move> {
     return legal_moves;
 }
 
-pub fn is_check() {
-
-}
-
 pub fn get_king_moves(board: &Board, colour: &Colour) -> Vec<Move> {
-    let mut move_vector: Vec<Move> = Vec::new();
+    let mut move_vector: Vec<Move> = Vec::with_capacity(8);
     let king_bitboard: Bitboard;
     let turn_colour: Bitboard;
     let mut move_bitboard: Bitboard = Bitboard(0);
@@ -86,7 +157,7 @@ pub fn get_king_moves(board: &Board, colour: &Colour) -> Vec<Move> {
 }
 
 pub fn get_pawn_moves(board: &Board, colour: &Colour) -> Vec<Move> {
-    let mut move_vector: Vec<Move> = Vec::new();
+    let mut move_vector: Vec<Move> = Vec::with_capacity(32);
     let pawn_bitboard: Bitboard;
     let opponent_colour: Bitboard;
     let starting_rank: Bitboard;
@@ -125,10 +196,10 @@ pub fn get_pawn_moves(board: &Board, colour: &Colour) -> Vec<Move> {
 }
 
 pub fn get_knight_moves(board: &Board, colour: &Colour) -> Vec<Move> {
-    let mut move_vector: Vec<Move> = Vec::new();
+    let mut move_vector: Vec<Move> = Vec::with_capacity(80);
     let knight_bitboard: Bitboard;
     let turn_colour: Bitboard;
-
+    
     match colour {
         Colour::White => (knight_bitboard, turn_colour) = (board.colour.white & board.role.knight, board.colour.white),
         Colour::Black => (knight_bitboard, turn_colour) = (board.colour.black & board.role.knight, board.colour.black),
@@ -147,4 +218,17 @@ pub fn get_knight_moves(board: &Board, colour: &Colour) -> Vec<Move> {
 
 pub fn get_rook_moves(board: &Board, colour: &Colour) {
     
+    let rook_bitboard: Bitboard;
+    let turn_colour: Bitboard;
+
+    match colour {
+        Colour::White => (rook_bitboard, turn_colour) = (board.colour.white & board.role.rook, board.colour.white),
+        Colour::Black => (rook_bitboard, turn_colour) = (board.colour.black & board.role.rook, board.colour.black),
+    }
+
+    for rook in rook_bitboard.get_component_bitboards() {
+        let mut blockers: Bitboard = board.occupied;
+        blockers &= ROOK_MASKS[rook.0.trailing_zeros() as usize];
+        let u64_key = (blockers.0 * ROOK_MAGICS[0]);
+    }
 }
