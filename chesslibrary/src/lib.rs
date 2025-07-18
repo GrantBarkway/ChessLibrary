@@ -6,3 +6,4 @@ pub mod role;
 pub mod movegen;
 pub mod colour;
 pub mod bitboard;
+pub mod magic;

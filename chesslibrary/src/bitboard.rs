@@ -15,10 +15,10 @@ impl Bitboard {
         let mut bitboard_vector = Vec::new();
         let mut bit_mask = Bitboard(1);
         for _i in 0..64 {
-            bit_mask = bit_mask << 1;
             if (bit_mask & self) != EMPTY_BITBOARD {
                 bitboard_vector.push(bit_mask);
             }
+            bit_mask = bit_mask << 1;
         }
         return bitboard_vector;
     }

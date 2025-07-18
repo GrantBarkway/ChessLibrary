@@ -1,7 +1,7 @@
 use chesslibrary::board::Board;
 //use chesslibrary::mv::Move;
 //use chesslibrary::square::Square;
-use chesslibrary::movegen::{get_legal_moves, get_rook_masks};
+use chesslibrary::movegen::{get_legal_moves};
 use chesslibrary::colour::Colour;
 use chesslibrary::bitboard::{Bitboard, bitboard_to_string_move};
 
@@ -12,8 +12,8 @@ fn main() {
     /*let mov = Move::new(&board,&Square::E2, &Square::E4);
     board.make_move(mov);
     let pawn_a3 = Move::new(&board, &Square::A7, &Square::A3);
-    board.make_move(pawn_a3);
-    board.display_board();*/
+    board.make_move(pawn_a3);*/
+    board.display_board();
     for _i in 0..10000000 {
         get_legal_moves(&board, Colour::White);
     }
