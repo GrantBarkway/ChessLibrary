@@ -3,7 +3,7 @@
 
 use crate::mv::Move;
 use crate::role::{ByRole};
-use crate::colour::{ByColour};
+use crate::colour::{Colour, ByColour};
 use crate::bitboard::Bitboard;
 
 #[derive(Debug)]
@@ -16,6 +16,7 @@ pub struct Board {
     pub role: ByRole<Bitboard>,
     pub colour: ByColour<Bitboard>,
     pub occupied: Bitboard,
+    pub turn: Colour,
 }
 
 impl Board {
@@ -34,6 +35,7 @@ impl Board {
                 white: Bitboard(0xffff),
             },
             occupied: Bitboard(0xffff_0000_0000_ffff),
+            turn: Colour::White,
         }
     }
     
@@ -43,6 +45,12 @@ impl Board {
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
         self.occupied |= &mv.to_square;
         self.clear_square(&mv.from_square);
+
+        if self.turn == Colour::White {
+            self.turn = Colour::Black;
+        } else {
+            self.turn = Colour::White;
+        }
     }
     
     // Not very efficient, just need primitive for testing

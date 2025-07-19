@@ -4,7 +4,7 @@
 use crate::bitboard::Bitboard;
 use crate::board::Board;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Colour {
     Black,
     White,

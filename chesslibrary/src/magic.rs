@@ -8,9 +8,6 @@ pub struct Magic {
     offset: usize
 }
 
-const ROOK_DELTAS: [i32; 4] = [8, 1, -8, -1];
-const BISHOP_DELTAS: [i32; 4] = [9, 7, -9, -7];
-
 // Credit to Shakmaty for these tables
 const ROOK_MAGICS: [Magic; 64] = [
     Magic { mask: 0x0001_0101_0101_017e, factor: 0x0028_0077_ffeb_fffe, offset: 26304 },
@@ -147,14 +144,13 @@ const BISHOP_MAGICS: [Magic; 64] = [
     Magic { mask: 0x0040_2010_0804_0200, factor: 0x007f_ff9f_df7f_f813, offset: 16076 },
 ];
 
-static ATTACKS: [u64; 88772] = bootstrap_magics();
+const ATTACKS: [u64; 88772] = bootstrap_magics();
 
-const fn sliding_attacks(square: i32, occupied: u64, deltas: &[i32]) -> u64 {
+const fn sliding_attacks(square: i32, occupied: u64, deltas: [i32; 4]) -> u64 {
     let mut attack = 0;
 
     let mut i = 0;
-    let len = deltas.len();
-    while i < len {
+    while i < 4 {
         let mut previous = square;
         loop {
             let sq = previous + deltas[i];
@@ -171,7 +167,7 @@ const fn sliding_attacks(square: i32, occupied: u64, deltas: &[i32]) -> u64 {
         }
         i += 1;
     }
-    attack
+    return attack;
 }
 
 const fn bootstrap_magics() -> [u64; 88772] {
@@ -182,7 +178,7 @@ const fn bootstrap_magics() -> [u64; 88772] {
         let range = magic.mask;
         let mut subset = 0;
         loop {
-            let attack = sliding_attacks(square, subset, &BISHOP_DELTAS);
+            let attack = sliding_attacks(square, subset, [9,7,-9,-7]);
             let idx = (magic.factor.wrapping_mul(subset) >> (64 - 9)) as usize + magic.offset;
             assert!(table[idx] == 0 || table[idx] == attack);
             table[idx] = attack;
@@ -196,7 +192,7 @@ const fn bootstrap_magics() -> [u64; 88772] {
         let range = magic.mask;
         let mut subset = 0;
         loop {
-            let attack = sliding_attacks(square, subset, &ROOK_DELTAS);
+            let attack = sliding_attacks(square, subset, [8, 1, -8, -1]);
             let idx = (magic.factor.wrapping_mul(subset) >> (64 - 12)) as usize + magic.offset;
             assert!(table[idx] == 0 || table[idx] == attack);
             table[idx] = attack;
@@ -207,11 +203,17 @@ const fn bootstrap_magics() -> [u64; 88772] {
         }
         square += 1;
     }
-    table
+    return table;
 }
 
-pub fn rook_attacks(sq: Bitboard, occupied: Bitboard) -> Bitboard {
+pub const fn rook_attacks(sq: Bitboard, occupied: Bitboard) -> Bitboard {
     let m = &ROOK_MAGICS[sq.trailing_zeros() as usize];
     let idx = (m.factor.wrapping_mul(occupied.0 & m.mask) >> (64 - 12)) as usize + m.offset;
+    Bitboard(ATTACKS[idx])
+}
+
+pub const fn bishop_attacks(sq: Bitboard, occupied: Bitboard) -> Bitboard {
+    let m = &BISHOP_MAGICS[sq.trailing_zeros() as usize];
+    let idx = (m.factor.wrapping_mul(occupied.0 & m.mask) >> (64 - 9)) as usize + m.offset;
     Bitboard(ATTACKS[idx])
 }

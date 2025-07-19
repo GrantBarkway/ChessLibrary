@@ -27,7 +27,7 @@ impl Bitboard {
         return self.0.count_ones();
     }
     
-    pub fn trailing_zeros(&self) -> i32 {
+    pub const fn trailing_zeros(&self) -> i32 {
         return self.0.trailing_zeros() as i32;
     }
     
