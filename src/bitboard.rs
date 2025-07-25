@@ -14,13 +14,11 @@ impl Bitboard {
     pub fn get_component_bitboards(&self) -> Vec<Bitboard> {
         let mut bitboard_vector = Vec::new();
         let mut bitboard_copy = self.clone().0 as i64;
-        let mut current_bitboard: i64 = bitboard_copy;
         let mut lowest_set_bit: i64;
         while bitboard_copy != 0 {
-            lowest_set_bit = current_bitboard & -current_bitboard;
+            lowest_set_bit = bitboard_copy & -bitboard_copy;
             bitboard_vector.push(Bitboard(lowest_set_bit as u64));
             bitboard_copy = bitboard_copy - lowest_set_bit;
-            current_bitboard = bitboard_copy;
         }
         return bitboard_vector;
     }
