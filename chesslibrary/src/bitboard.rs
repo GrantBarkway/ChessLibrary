@@ -13,12 +13,14 @@ impl Bitboard {
     // Splits a bitboard with multiple 1s into a vector of component bitboards containing only one 1 in it
     pub fn get_component_bitboards(&self) -> Vec<Bitboard> {
         let mut bitboard_vector = Vec::new();
-        let mut bit_mask = Bitboard(1);
-        for _i in 0..64 {
-            if (bit_mask & self) != EMPTY_BITBOARD {
-                bitboard_vector.push(bit_mask);
-            }
-            bit_mask = bit_mask << 1;
+        let mut bitboard_copy = self.clone().0 as i64;
+        let mut current_bitboard: i64 = bitboard_copy;
+        let mut lowest_set_bit: i64;
+        while bitboard_copy != 0 {
+            lowest_set_bit = current_bitboard & -current_bitboard;
+            bitboard_vector.push(Bitboard(lowest_set_bit as u64));
+            bitboard_copy = bitboard_copy - lowest_set_bit;
+            current_bitboard = bitboard_copy;
         }
         return bitboard_vector;
     }

@@ -2,7 +2,7 @@ use chesslibrary::board::Board;
 use chesslibrary::mv::Move;
 use chesslibrary::square::Square;
 use chesslibrary::movegen::{get_legal_moves};
-use chesslibrary::bitboard::{bitboard_to_string_move};
+use chesslibrary::bitboard::{bitboard_to_string_move,Bitboard};
 
 fn main() {
     use std::time::Instant;
