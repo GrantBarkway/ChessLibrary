@@ -27,7 +27,7 @@ enum File {
     H
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Move {
     pub role: Option<Role>,
     pub colour: Option<Colour>,

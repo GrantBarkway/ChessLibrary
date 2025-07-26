@@ -2,7 +2,7 @@
 #![allow(dead_code, unused_variables)]
 
 use crate::board::Board;
-use crate::bitboard::Bitboard;
+use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 
 #[derive(Debug, PartialEq)]
 pub enum Role {
@@ -26,17 +26,17 @@ pub struct ByRole<T> {
 
 // Gets the role at a square
 pub fn get_role(board: &Board, square: &Bitboard) -> Option<Role> {
-    if (board.role.pawn & square).count_ones() != 0 {
+    if (board.role.pawn & square) != EMPTY_BITBOARD {
         return Some(Role::Pawn);
-    } else if (board.role.knight & square).count_ones() != 0 {
+    } else if (board.role.knight & square) != EMPTY_BITBOARD {
         return Some(Role::Knight);
-    } else if (board.role.bishop & square).count_ones() != 0 {
+    } else if (board.role.bishop & square) != EMPTY_BITBOARD {
         return Some(Role::Bishop);
-    } else if (board.role.rook & square).count_ones() != 0 {
+    } else if (board.role.rook & square) != EMPTY_BITBOARD {
         return Some(Role::Rook);
-    } else if (board.role.queen & square).count_ones() != 0 {
+    } else if (board.role.queen & square) != EMPTY_BITBOARD {
         return Some(Role::Queen);
-    } else if (board.role.king & square).count_ones() != 0 {
+    } else if (board.role.king & square) != EMPTY_BITBOARD {
         return Some(Role::King);
     } else {
         return None;

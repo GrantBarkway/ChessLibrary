@@ -5,6 +5,7 @@ use crate::mv::Move;
 use crate::role::{ByRole};
 use crate::colour::{Colour, ByColour};
 use crate::bitboard::Bitboard;
+use crate::movegen::get_legal_moves;
 
 #[derive(Debug)]
 // Order of board
@@ -13,15 +14,18 @@ use crate::bitboard::Bitboard;
 //0b10000000,0b1000000,0b100000,0b10000,0b1000,0b100,0b10,0b1
 
 pub struct Board {
+    pub move_list: Vec<Move>,
     pub role: ByRole<Bitboard>,
     pub colour: ByColour<Bitboard>,
     pub occupied: Bitboard,
     pub turn: Colour,
+    pub attack_bitboard: ByColour<Bitboard>,
 }
 
 impl Board {
     pub fn new() -> Board {
         Board {
+            move_list: Vec::new(),
             role: ByRole {
                 pawn: Bitboard(0x00ff_0000_0000_ff00),
                 knight: Bitboard(0x4200_0000_0000_0042),
@@ -36,21 +40,57 @@ impl Board {
             },
             occupied: Bitboard(0xffff_0000_0000_ffff),
             turn: Colour::White,
+            attack_bitboard: ByColour {
+                black: Bitboard(0),
+                white: Bitboard(0)
+            }
         }
     }
     
     // Makes move on the board
-    pub fn make_move(&mut self, mv: Move) {
+    pub fn play(&mut self, mv: Move) {
+        let legal_moves = get_legal_moves(self);
+        if legal_moves.contains(&mv) {
+            self.clear_square(&mv.to_square);
+            self.set_square(&mv.to_square, &mv.role, &mv.colour);
+            self.occupied |= &mv.to_square;
+            self.clear_square(&mv.from_square);
+            
+            if self.turn == Colour::White {
+                self.turn = Colour::Black;
+            } else {
+                self.turn = Colour::White;
+            }
+
+            self.move_list.push(mv);
+        } else {
+            panic!("Not a legal move!")
+        }
+    }
+
+    pub fn play_unsafe(&mut self, mv: Move) {
         self.clear_square(&mv.to_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
         self.occupied |= &mv.to_square;
         self.clear_square(&mv.from_square);
-
+        
         if self.turn == Colour::White {
             self.turn = Colour::Black;
         } else {
             self.turn = Colour::White;
         }
+
+        self.move_list.push(mv);
+    }
+    
+    // Determines if the king is in check on a given board
+    pub fn is_in_check(&self) -> bool {
+        let king_square: Bitboard;
+        match self.turn {
+            Colour::White => king_square = self.colour.white & self.role.king,
+            Colour::Black => king_square = self.colour.black & self.role.king,
+        }
+        return false;
     }
     
     // Not very efficient, just need primitive for testing
