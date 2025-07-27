@@ -146,6 +146,8 @@ const BISHOP_MAGICS: [Magic; 64] = [
 
 const ATTACKS: [u64; 88772] = bootstrap_magics();
 
+static RAYS: [[u64; 64]; 64] = bootstrap_rays();
+
 const fn sliding_attacks(square: i32, occupied: u64, deltas: [i32; 4]) -> u64 {
     let mut attack = 0;
 
@@ -168,6 +170,48 @@ const fn sliding_attacks(square: i32, occupied: u64, deltas: [i32; 4]) -> u64 {
         i += 1;
     }
     return attack;
+}
+
+const fn bootstrap_rays() -> [[u64; 64]; 64] {
+    let mut table = [[0; 64]; 64];
+    let mut a = 0;
+    while a < 64 {
+        let mut b = 0;
+        while b < 64 {
+            table[a as usize][b as usize] = if a == b {
+                0
+            } else if a & 7 == b & 7 {
+                0x0101_0101_0101_0101 << (a & 7)
+            } else if a >> 3 == b >> 3 {
+                0xff << (8 * (a >> 3))
+            } else {
+                let diag = (a >> 3) - (a & 7);
+                let anti_diag = (a >> 3) + (a & 7) - 7;
+                if diag == (b >> 3) - (b & 7) {
+                    if diag >= 0 {
+                        0x8040_2010_0804_0201 << (8 * diag)
+                    } else {
+                        0x8040_2010_0804_0201 >> (8 * -diag)
+                    }
+                } else if anti_diag == (b >> 3) + (b & 7) - 7 {
+                    if anti_diag >= 0 {
+                        0x0102_0408_1020_4080 << (8 * anti_diag)
+                    } else {
+                        0x0102_0408_1020_4080 >> (8 * -anti_diag)
+                    }
+                } else {
+                    0
+                }
+            };
+            b += 1;
+        }
+        a += 1;
+    }
+    table
+}
+
+pub const fn ray(a: Bitboard, b: Bitboard) -> Bitboard {
+    Bitboard(RAYS[a.trailing_zeros() as usize][b.trailing_zeros() as usize])
 }
 
 const fn bootstrap_magics() -> [u64; 88772] {

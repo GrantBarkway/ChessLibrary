@@ -1,6 +1,7 @@
 use chesslibrary::board::Board;
 use chesslibrary::movegen::{get_legal_moves};
-use chesslibrary::bitboard::{bitboard_to_string_move};
+use chesslibrary::bitboard::{Bitboard, bitboard_to_string_move};
+use chesslibrary::magic::ray;
 
 fn main() {
     use std::time::Instant;
