@@ -8,7 +8,7 @@ fn main() {
     let now = Instant::now();
     let mut board = Board::new();
     board.display_board();
-    for _i in 0..999999 {
+    for _i in 0..99999 {
         get_legal_moves(&mut board);
     }
     

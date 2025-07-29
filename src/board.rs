@@ -4,15 +4,15 @@
 use crate::mv::Move;
 use crate::role::{ByRole};
 use crate::colour::{Colour, ByColour};
-use crate::bitboard::Bitboard;
-use crate::movegen::get_legal_moves;
+use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
+use crate::movegen::{get_black_attacks, get_legal_moves, get_white_attacks};
 
-#[derive(Debug)]
 // Order of board
 // ....
 //0b1000000000000000,0b100000000000000,0b10000000000000,0b1000000000000,0b100000000000,0b10000000000,0b1000000000,0b100000000
 //0b10000000,0b1000000,0b100000,0b10000,0b1000,0b100,0b10,0b1
 
+#[derive(Debug, Clone)]
 pub struct Board {
     pub move_list: Vec<Move>,
     pub role: ByRole<Bitboard>,
@@ -81,11 +81,17 @@ impl Board {
     // Determines if the king is in check on a given board
     pub fn is_in_check(&self) -> bool {
         let king_square: Bitboard;
+        let attack_squares: Bitboard;
         match self.turn {
-            Colour::White => king_square = self.colour.white & self.role.king,
-            Colour::Black => king_square = self.colour.black & self.role.king,
+            Colour::White => (king_square, attack_squares) = (self.colour.white & self.role.king, get_black_attacks(&self)),
+            Colour::Black => (king_square, attack_squares) = (self.colour.black & self.role.king, get_white_attacks(&self)),
         }
-        return false;
+
+        if king_square & attack_squares == EMPTY_BITBOARD {
+            return false;
+        } else {
+            return true;
+        }
     }
     
     // Not very efficient, just need primitive for testing

@@ -31,7 +31,17 @@ const BLACK_PAWN_H_FILE_ATTACK: i32 = 7;
 // Generates a vector of legal moves for the side to move
 pub fn get_legal_moves(board: &Board) -> Vec<Move> {
     // NEED TO IMPLEMENT LEGAL STUFF NOW
-    return get_moves(board);
+    let mut legal_move_vector = Vec::new();
+
+    for mv in get_moves(&board) {
+        let mut board_copy = board.clone();
+        board_copy.play_unsafe(mv);
+        if board_copy.is_in_check() == false {
+            legal_move_vector.push(mv);
+        }
+    }
+    
+    return legal_move_vector;
 }
 
 // Generates a vector of all (not necessarily legal) moves for the side to move
@@ -56,7 +66,7 @@ pub fn get_white_moves(board: &Board) -> Vec<Move> {
 pub fn get_white_attacks(board: &Board) -> Bitboard {
     let mut white_attack_bitboard = Bitboard(0);
     white_attack_bitboard |= get_white_king_attacks(board);
-    // Need to implement pawn attacks
+    white_attack_bitboard |= get_white_pawn_attacks(board);
     white_attack_bitboard |= get_white_knight_attacks(board);
     white_attack_bitboard |= get_white_bishop_attacks(board);
     white_attack_bitboard |= get_white_rook_attacks(board);
@@ -78,7 +88,7 @@ pub fn get_black_moves(board: &Board) -> Vec<Move> {
 pub fn get_black_attacks(board: &Board) -> Bitboard {
     let mut black_attack_bitboard = Bitboard(0);
     black_attack_bitboard |= get_black_king_attacks(board);
-    // Need to implement pawn attacks
+    black_attack_bitboard |= get_black_pawn_attacks(board);
     black_attack_bitboard |= get_black_knight_attacks(board);
     black_attack_bitboard |= get_black_bishop_attacks(board);
     black_attack_bitboard |= get_black_rook_attacks(board);
@@ -182,6 +192,25 @@ pub fn get_white_pawn_moves(board: &Board) -> Vec<Move> {
     return move_vector;
 }
 
+pub fn get_white_pawn_attacks(board: &Board) -> Bitboard {
+    let pawn_bitboard: Bitboard = board.colour.white & board.role.pawn;
+    let mut pawn_attack_bitboard = Bitboard(0);
+    
+    for individual_pawn in pawn_bitboard.get_component_bitboards() {
+        let mut attack_moves = individual_pawn << WHITE_PAWN_A_FILE_ATTACK;
+        if (attack_moves & !FILE_A) != EMPTY_BITBOARD {
+            pawn_attack_bitboard |= attack_moves;
+        }
+        
+        attack_moves = individual_pawn << WHITE_PAWN_H_FILE_ATTACK;
+        if (attack_moves & !FILE_H) != EMPTY_BITBOARD {
+            pawn_attack_bitboard |= attack_moves;
+        }
+    }
+
+    return pawn_attack_bitboard;
+}
+
 pub fn get_black_pawn_moves(board: &Board) -> Vec<Move> {
     let mut move_vector: Vec<Move> = Vec::new();
     let pawn_bitboard: Bitboard = board.colour.black & board.role.pawn;
@@ -194,7 +223,7 @@ pub fn get_black_pawn_moves(board: &Board) -> Vec<Move> {
         if (attack_moves & !FILE_A & opponent_colour) != EMPTY_BITBOARD {
             move_vector.push(Move::new(&board, &single_pawn, &attack_moves, &EMPTY_BITBOARD, &false, None));
         }
-
+        
         attack_moves = single_pawn >> BLACK_PAWN_H_FILE_ATTACK;
         if (attack_moves & !FILE_H & opponent_colour) != EMPTY_BITBOARD {
             move_vector.push(Move::new(&board, &single_pawn, &attack_moves, &EMPTY_BITBOARD, &false, None));
@@ -212,6 +241,25 @@ pub fn get_black_pawn_moves(board: &Board) -> Vec<Move> {
     }
     
     return move_vector;
+}
+
+pub fn get_black_pawn_attacks(board: &Board) -> Bitboard {
+    let pawn_bitboard: Bitboard = board.colour.black & board.role.pawn;
+    let mut pawn_attack_bitboard = Bitboard(0);
+    
+    for individual_pawn in pawn_bitboard.get_component_bitboards() {
+        let mut attack_moves = individual_pawn >> BLACK_PAWN_A_FILE_ATTACK;
+        if (attack_moves & !FILE_A) != EMPTY_BITBOARD {
+            pawn_attack_bitboard |= attack_moves;
+        }
+        
+        attack_moves = individual_pawn >> BLACK_PAWN_H_FILE_ATTACK;
+        if (attack_moves & !FILE_H) != EMPTY_BITBOARD {
+            pawn_attack_bitboard |= attack_moves;
+        }
+    }
+
+    return pawn_attack_bitboard;
 }
 
 pub fn get_white_knight_moves(board: &Board) -> Vec<Move> {

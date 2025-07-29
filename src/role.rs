@@ -4,7 +4,7 @@
 use crate::board::Board;
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Role {
     Pawn,
     Knight,
@@ -14,7 +14,7 @@ pub enum Role {
     King
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct ByRole<T> {
     pub pawn: T,
     pub knight: T,

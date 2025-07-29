@@ -4,13 +4,13 @@
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::board::Board;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Colour {
     Black,
     White,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct ByColour<T> {
     pub white: T,
     pub black: T,
