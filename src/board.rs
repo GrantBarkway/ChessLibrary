@@ -79,10 +79,10 @@ impl Board {
     }
     
     // Determines if the king is in check on a given board
-    pub fn is_in_check(&self) -> bool {
+    pub fn is_check(&self, colour_to_check: Colour) -> bool {
         let king_square: Bitboard;
         let attack_squares: Bitboard;
-        match self.turn {
+        match colour_to_check {
             Colour::White => (king_square, attack_squares) = (self.colour.white & self.role.king, get_black_attacks(&self)),
             Colour::Black => (king_square, attack_squares) = (self.colour.black & self.role.king, get_white_attacks(&self)),
         }

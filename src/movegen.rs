@@ -30,13 +30,12 @@ const BLACK_PAWN_H_FILE_ATTACK: i32 = 7;
 
 // Generates a vector of legal moves for the side to move
 pub fn get_legal_moves(board: &Board) -> Vec<Move> {
-    // NEED TO IMPLEMENT LEGAL STUFF NOW
     let mut legal_move_vector = Vec::new();
 
     for mv in get_moves(&board) {
         let mut board_copy = board.clone();
         board_copy.play_unsafe(mv);
-        if board_copy.is_in_check() == false {
+        if board_copy.is_check(board.turn) == false {
             legal_move_vector.push(mv);
         }
     }
