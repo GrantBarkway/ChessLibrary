@@ -19,7 +19,6 @@ pub struct Board {
     pub colour: ByColour<Bitboard>,
     pub occupied: Bitboard,
     pub turn: Colour,
-    pub attack_bitboard: ByColour<Bitboard>,
 }
 
 impl Board {
@@ -40,10 +39,6 @@ impl Board {
             },
             occupied: Bitboard(0xffff_0000_0000_ffff),
             turn: Colour::White,
-            attack_bitboard: ByColour {
-                black: Bitboard(0),
-                white: Bitboard(0)
-            }
         }
     }
     
