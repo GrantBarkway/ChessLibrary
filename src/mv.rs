@@ -1,31 +1,7 @@
-// Just while testing
-#![allow(dead_code, unused_variables)]
-
 use crate::bitboard::Bitboard;
 use crate::role::{Role, get_role};
 use crate::board::Board;
 use crate::colour::{Colour, get_colour};
-enum Rank {
-    First,
-    Second,
-    Third,
-    Fourth,
-    Fifth,
-    Sixth,
-    Seventh,
-    Eighth
-}
-
-enum File {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-    H
-}
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Move {

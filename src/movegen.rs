@@ -1,12 +1,9 @@
-// Just while testing
-#![allow(dead_code, unused_variables)]
-
 use crate::board::{Board};
-use crate::castle::{BLACK_KINGSIDE_CASTLE_SQUARES, BLACK_QUEENSIDE_CASTLE_SQUARES, WHITE_KINGSIDE_CASTLE_SQUARES, WHITE_QUEENSIDE_CASTLE_SQUARES};
+use crate::castle::{BLACK_KINGSIDE_CASTLE_CHECK_SQUARES, BLACK_KINGSIDE_CASTLE_UNOCCUPIED_SQUARES, BLACK_QUEENSIDE_CASTLE_CHECK_SQUARES, BLACK_QUEENSIDE_CASTLE_UNOCCUPIED_SQUARES, WHITE_KINGSIDE_CASTLE_CHECK_SQUARES, WHITE_KINGSIDE_CASTLE_UNOCCUPIED_SQUARES, WHITE_QUEENSIDE_CASTLE_CHECK_SQUARES, WHITE_QUEENSIDE_CASTLE_UNOCCUPIED_SQUARES};
 use crate::colour::{Colour};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::mv::Move;
-use crate::square::{EIGHTH_RANK, FILE_A, FILE_H, FIRST_RANK, SECOND_RANK, SEVENTH_RANK};
+use crate::square::{Square, EIGHTH_RANK, FILE_A, FILE_H, FIRST_RANK, SECOND_RANK, SEVENTH_RANK};
 use crate::magic::{bishop_attacks, rook_attacks};
 
 // H1, G1, F1, E1, D1, C1, B1, A1
@@ -108,12 +105,12 @@ pub fn get_white_king_moves(board: &Board) -> Vec<Move> {
     }
     
     let black_attack_bitboard = get_black_attacks(board);
-    if (board.castling_rights.white.kingside == true) & ((WHITE_KINGSIDE_CASTLE_SQUARES & board.occupied & black_attack_bitboard) == EMPTY_BITBOARD) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Bitboard(0b10), &EMPTY_BITBOARD, &true, None))
+    if (board.castling_rights.white.kingside == true) & (((WHITE_KINGSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((WHITE_KINGSIDE_CASTLE_CHECK_SQUARES & black_attack_bitboard) == EMPTY_BITBOARD)) {
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::G1, &EMPTY_BITBOARD, &true, None))
     }
     
-    if (board.castling_rights.white.queenside == true) & ((WHITE_QUEENSIDE_CASTLE_SQUARES & board.occupied & black_attack_bitboard) == EMPTY_BITBOARD) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Bitboard(0b100000), &EMPTY_BITBOARD, &true, None))
+    if (board.castling_rights.white.queenside == true) & (((WHITE_QUEENSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((WHITE_QUEENSIDE_CASTLE_CHECK_SQUARES & black_attack_bitboard) == EMPTY_BITBOARD)) {
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::C1, &EMPTY_BITBOARD, &true, None))
     }
     
     return move_vector;
@@ -148,12 +145,12 @@ pub fn get_black_king_moves(board: &Board) -> Vec<Move> {
     }
     
     let white_attack_bitboard = get_white_attacks(board);
-    if (board.castling_rights.black.kingside == true) & ((BLACK_KINGSIDE_CASTLE_SQUARES & board.occupied & white_attack_bitboard) == EMPTY_BITBOARD) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Bitboard(0b1000000000000000000000000000000000000000000000000000000000), &EMPTY_BITBOARD, &true, None))
+    if (board.castling_rights.black.kingside == true) & (((BLACK_KINGSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((BLACK_KINGSIDE_CASTLE_CHECK_SQUARES & white_attack_bitboard) == EMPTY_BITBOARD)) {
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::G8, &EMPTY_BITBOARD, &true, None))
     }
     
-    if (board.castling_rights.black.queenside == true) & ((BLACK_QUEENSIDE_CASTLE_SQUARES & board.occupied & white_attack_bitboard) == EMPTY_BITBOARD) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Bitboard(0b10000000000000000000000000000000000000000000000000000000000000), &EMPTY_BITBOARD, &true, None))
+    if (board.castling_rights.black.queenside == true) & (((BLACK_QUEENSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((BLACK_QUEENSIDE_CASTLE_CHECK_SQUARES & white_attack_bitboard) == EMPTY_BITBOARD)) {
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::C1, &EMPTY_BITBOARD, &true, None))
     }
     
     return move_vector;

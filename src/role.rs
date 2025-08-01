@@ -1,6 +1,3 @@
-// Just while testing
-#![allow(dead_code, unused_variables)]
-
 use crate::board::Board;
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 
@@ -24,7 +21,7 @@ pub struct ByRole<T> {
     pub king: T,
 }
 
-// Gets the role at a square
+// Gets the role at a square. Can only be called on occupied squares
 pub fn get_role(board: &Board, square: &Bitboard) -> Option<Role> {
     if (board.role.pawn & square) != EMPTY_BITBOARD {
         return Some(Role::Pawn);

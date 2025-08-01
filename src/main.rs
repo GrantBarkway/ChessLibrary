@@ -13,7 +13,7 @@ fn main() {
     let ba2 = Move::new(&board, &Square::F1, &Square::A6, &Bitboard(0), &false, None);
     board.play_unsafe(ba2);
     board.display_board();
-    for _i in 0..999999 {
+    for _i in 0..99999 {
         get_legal_moves(&mut board);
     }
     

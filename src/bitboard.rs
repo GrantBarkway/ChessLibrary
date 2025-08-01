@@ -7,8 +7,6 @@ pub struct Bitboard(pub u64);
 
 pub const EMPTY_BITBOARD: Bitboard = Bitboard(0);
 
-// NEED TO OPTIMIZE GET_COMPONENT_BITBOARDS
-
 impl Bitboard {
     // Splits a bitboard with multiple 1s into a vector of component bitboards containing only one 1 in it
     pub fn get_component_bitboards(&self) -> Vec<Bitboard> {

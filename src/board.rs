@@ -1,6 +1,3 @@
-// Just while testing
-#![allow(dead_code, unused_variables)]
-
 use crate::mv::Move;
 use crate::role::{Role, ByRole};
 use crate::colour::{Colour, ByColour};
@@ -153,9 +150,9 @@ impl Board {
     // Not very efficient, just need primitive for testing
     pub fn display_board(&self) {
         let mut set_bit: u64 = 0b1000000000000000000000000000000000000000000000000000000000000000;
-        for i in 0..8 {
+        for _i in 0..8 {
             let mut rank = String::from("");
-            for i in 0..8 {
+            for _i in 0..8 {
                 if (self.occupied & set_bit).count_ones() != 0 {
                     if (self.colour.white & set_bit).count_ones() != 0 {
                         if (self.role.king & set_bit).count_ones() != 0 {

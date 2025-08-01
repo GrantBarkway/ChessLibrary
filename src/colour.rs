@@ -1,6 +1,3 @@
-// Just while testing
-#![allow(dead_code, unused_variables)]
-
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::board::Board;
 
@@ -16,7 +13,7 @@ pub struct ByColour<T> {
     pub black: T,
 }
  
- // Gets the colour at a square
+ // Gets the colour of piece at a square
 pub fn get_colour(board: &Board, square: &Bitboard) -> Option<Colour> {
     if (board.colour.black & square) != EMPTY_BITBOARD {
         return Some(Colour::Black);

@@ -1,6 +1,3 @@
-// Just while testing
-#![allow(dead_code, unused_variables)]
-
 use crate::board::{Board};
 use crate::role::{Role, get_role};
 use crate::colour::{Colour, get_colour};
