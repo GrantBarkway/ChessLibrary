@@ -15,7 +15,7 @@ pub struct ByColour<T> {
     pub white: T,
     pub black: T,
 }
-
+ 
  // Gets the colour at a square
 pub fn get_colour(board: &Board, square: &Bitboard) -> Option<Colour> {
     if (board.colour.black & square) != EMPTY_BITBOARD {

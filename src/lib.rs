@@ -7,3 +7,4 @@ pub mod movegen;
 pub mod colour;
 pub mod bitboard;
 pub mod magic;
+pub mod castle;

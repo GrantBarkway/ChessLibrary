@@ -2,6 +2,7 @@
 #![allow(dead_code, unused_variables)]
 
 use crate::board::{Board};
+use crate::castle::{BLACK_KINGSIDE_CASTLE_SQUARES, BLACK_QUEENSIDE_CASTLE_SQUARES, WHITE_KINGSIDE_CASTLE_SQUARES, WHITE_QUEENSIDE_CASTLE_SQUARES};
 use crate::colour::{Colour};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::mv::Move;
@@ -47,7 +48,7 @@ pub fn get_legal_moves(board: &Board) -> Vec<Move> {
 pub fn get_moves(board: &Board) -> Vec<Move> {
     match board.turn {
         Colour::White => return get_white_moves(board),
-        Colour::Black => return get_black_moves(board)
+        Colour::Black => return get_black_moves(board),
     }
 }
 
@@ -100,11 +101,19 @@ pub fn get_white_king_moves(board: &Board) -> Vec<Move> {
     let king_bitboard: Bitboard = board.colour.white & board.role.king;
     let turn_colour: Bitboard = board.colour.white;
     
-    // Need to also add checks for if the square is attacked
     for single_move in get_white_king_attacks(board).get_component_bitboards() {
         if (single_move & turn_colour).count_ones() == 0 {
             move_vector.push(Move::new(&board, &king_bitboard, &single_move, &EMPTY_BITBOARD, &false, None));
         }
+    }
+    
+    let black_attack_bitboard = get_black_attacks(board);
+    if (board.castling_rights.white.kingside == true) & ((WHITE_KINGSIDE_CASTLE_SQUARES & board.occupied & black_attack_bitboard) == EMPTY_BITBOARD) {
+        move_vector.push(Move::new(&board, &king_bitboard, &Bitboard(0b10), &EMPTY_BITBOARD, &true, None))
+    }
+    
+    if (board.castling_rights.white.queenside == true) & ((WHITE_QUEENSIDE_CASTLE_SQUARES & board.occupied & black_attack_bitboard) == EMPTY_BITBOARD) {
+        move_vector.push(Move::new(&board, &king_bitboard, &Bitboard(0b100000), &EMPTY_BITBOARD, &true, None))
     }
     
     return move_vector;
@@ -132,11 +141,19 @@ pub fn get_black_king_moves(board: &Board) -> Vec<Move> {
     let king_bitboard: Bitboard = board.colour.black & board.role.king;
     let turn_colour: Bitboard = board.colour.black;
     
-    // Need to also add checks for if the square is attacked
     for single_move in get_black_king_attacks(board).get_component_bitboards() {
         if (single_move & turn_colour).count_ones() == 0 {
             move_vector.push(Move::new(&board, &king_bitboard, &single_move, &EMPTY_BITBOARD, &false, None));
         }
+    }
+    
+    let white_attack_bitboard = get_white_attacks(board);
+    if (board.castling_rights.black.kingside == true) & ((BLACK_KINGSIDE_CASTLE_SQUARES & board.occupied & white_attack_bitboard) == EMPTY_BITBOARD) {
+        move_vector.push(Move::new(&board, &king_bitboard, &Bitboard(0b1000000000000000000000000000000000000000000000000000000000), &EMPTY_BITBOARD, &true, None))
+    }
+    
+    if (board.castling_rights.black.queenside == true) & ((BLACK_QUEENSIDE_CASTLE_SQUARES & board.occupied & white_attack_bitboard) == EMPTY_BITBOARD) {
+        move_vector.push(Move::new(&board, &king_bitboard, &Bitboard(0b10000000000000000000000000000000000000000000000000000000000000), &EMPTY_BITBOARD, &true, None))
     }
     
     return move_vector;

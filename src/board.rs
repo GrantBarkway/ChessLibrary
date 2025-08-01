@@ -2,10 +2,12 @@
 #![allow(dead_code, unused_variables)]
 
 use crate::mv::Move;
-use crate::role::{ByRole};
+use crate::role::{Role, ByRole};
 use crate::colour::{Colour, ByColour};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::movegen::{get_black_attacks, get_legal_moves, get_white_attacks};
+use crate::castle::{ByCastleSide};
+use crate::square::Square;
 
 // Order of board
 // ....
@@ -19,6 +21,7 @@ pub struct Board {
     pub colour: ByColour<Bitboard>,
     pub occupied: Bitboard,
     pub turn: Colour,
+    pub castling_rights: ByColour<ByCastleSide<bool>>,
 }
 
 impl Board {
@@ -39,6 +42,18 @@ impl Board {
             },
             occupied: Bitboard(0xffff_0000_0000_ffff),
             turn: Colour::White,
+            castling_rights: ByColour {
+                black:
+                    ByCastleSide { 
+                        kingside: true,
+                        queenside: true
+                    },
+                white:
+                    ByCastleSide { 
+                        kingside: true,
+                        queenside: true,
+                    }
+            }
         }
     }
     
@@ -46,17 +61,17 @@ impl Board {
     pub fn play(&mut self, mv: Move) {
         let legal_moves = get_legal_moves(self);
         if legal_moves.contains(&mv) {
-            self.clear_square(&mv.to_square);
-            self.set_square(&mv.to_square, &mv.role, &mv.colour);
-            self.occupied |= &mv.to_square;
-            self.clear_square(&mv.from_square);
             
-            if self.turn == Colour::White {
-                self.turn = Colour::Black;
-            } else {
-                self.turn = Colour::White;
-            }
+            self.castling_rights(mv);
 
+            if mv.castle == true {
+                self.play_castle(mv);
+            } else {
+                self.play_non_castle(mv);
+            }
+            
+            self.swap_turn();
+            
             self.move_list.push(mv);
         } else {
             panic!("Not a legal move!")
@@ -64,18 +79,59 @@ impl Board {
     }
 
     pub fn play_unsafe(&mut self, mv: Move) {
+
+        self.castling_rights(mv);
+
         self.clear_square(&mv.to_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
-        self.occupied |= &mv.to_square;
         self.clear_square(&mv.from_square);
         
+        self.swap_turn();
+
+        self.move_list.push(mv);
+    }
+    
+    pub fn play_non_castle(&mut self, mv: Move) {
+        self.clear_square(&mv.to_square);
+        self.set_square(&mv.to_square, &mv.role, &mv.colour);
+        self.clear_square(&mv.from_square);
+    }
+    
+    pub fn play_castle(&mut self, mv: Move) {
+        self.clear_square(&mv.from_square);
+        self.set_square(&mv.to_square, &mv.role, &mv.colour);
+        match mv.to_square {
+            // White kingside
+            Square::G1 => {
+                self.clear_square(&Square::H1);
+                self.set_square(&Square::F1, &Some(Role::Rook), &mv.colour);
+            }
+            // White queenside
+            Square::C1 => {
+                self.clear_square(&Square::A1);
+                self.set_square(&Square::D1, &Some(Role::Rook), &mv.colour);
+            }
+            // Black kingside
+            Square::G8 => {
+                self.clear_square(&Square::H8);
+                self.set_square(&Square::F8, &Some(Role::Rook), &mv.colour);
+            }
+            // Black queenside
+            Square::C8 => {
+                self.clear_square(&Square::A8);
+                self.set_square(&Square::D8, &Some(Role::Rook), &mv.colour);
+            }
+            _ => (),
+        }
+    }
+    
+    // Swaps the board turn
+    pub fn swap_turn(&mut self) {
         if self.turn == Colour::White {
             self.turn = Colour::Black;
         } else {
             self.turn = Colour::White;
         }
-
-        self.move_list.push(mv);
     }
     
     // Determines if the king is in check on a given board
