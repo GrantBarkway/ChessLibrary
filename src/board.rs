@@ -63,8 +63,10 @@ impl Board {
 
             if mv.castle == true {
                 self.play_castle(mv);
+            } else if mv.en_passant == true {
+                self.play_en_passant(mv);
             } else {
-                self.play_non_castle(mv);
+                self.play_normal(mv);
             }
             
             self.swap_turn();
@@ -79,6 +81,14 @@ impl Board {
 
         self.castling_rights(mv);
 
+        if mv.castle == true {
+            self.play_castle(mv);
+        } else if mv.en_passant == true {
+            self.play_en_passant(mv);
+        } else {
+            self.play_normal(mv);
+        }
+
         self.clear_square(&mv.to_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
         self.clear_square(&mv.from_square);
@@ -88,7 +98,7 @@ impl Board {
         self.move_list.push(mv);
     }
     
-    pub fn play_non_castle(&mut self, mv: Move) {
+    pub fn play_normal(&mut self, mv: Move) {
         self.clear_square(&mv.to_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
         self.clear_square(&mv.from_square);
@@ -119,6 +129,22 @@ impl Board {
                 self.set_square(&Square::D8, &Some(Role::Rook), &mv.colour);
             }
             _ => (),
+        }
+    }
+
+    pub fn play_en_passant(&mut self, mv: Move) {
+        let opponent_pawn_square: Bitboard;
+        self.clear_square(&mv.from_square);
+        self.set_square(&mv.to_square, &mv.role, &mv.colour);
+        match self.turn {
+            Colour::White =>  {
+                opponent_pawn_square = mv.to_square >> 8;
+                self.clear_square(&opponent_pawn_square);
+            }
+            Colour::Black => {
+                opponent_pawn_square = mv.to_square << 8;
+                self.clear_square(&opponent_pawn_square);
+            }
         }
     }
     

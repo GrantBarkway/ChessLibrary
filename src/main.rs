@@ -8,8 +8,9 @@ fn main() {
     use std::time::Instant;
     let now = Instant::now();
     let mut board = Board::new();
-    board.play_unsafe(Move::new(&board, &Square::A2, &Square::A5, &EMPTY_BITBOARD, &false, &false, None));
-    board.play_unsafe(Move::new(&board, &Square::B7, &Square::B5, &Bitboard(70368744177664), &false, &false, None));
+    board.play_unsafe(Move::new(&board, &Square::B2, &Square::B5, &EMPTY_BITBOARD, &false, &false, None));
+    board.play_unsafe(Move::new(&board, &Square::C7, &Square::C5, &Bitboard(35184372088832), &false, &false, None));
+    board.play_unsafe(Move::new(&board, &Square::B5, &Square::C6, &EMPTY_BITBOARD, &true, &false, None));
     board.display_board();
     for _i in 0..99999 {
         get_legal_moves(&mut board);
