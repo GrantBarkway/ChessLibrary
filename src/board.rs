@@ -139,7 +139,7 @@ impl Board {
             Colour::White => (king_square, attack_squares) = (self.colour.white & self.role.king, get_black_attacks(&self)),
             Colour::Black => (king_square, attack_squares) = (self.colour.black & self.role.king, get_white_attacks(&self)),
         }
-
+        
         if king_square & attack_squares == EMPTY_BITBOARD {
             return false;
         } else {
