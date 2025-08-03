@@ -9,10 +9,6 @@ fn main() {
     use std::time::Instant;
     let now = Instant::now();
     let mut board = Board::new();
-    board.clear_square(&Square::A7);
-    board.clear_square(&Square::A8);
-    board.play_unsafe(Move::new(&board, &Square::A2, &Square::A8, &EMPTY_BITBOARD, &false, &false, Some(Role::Queen)));
-    board.swap_turn();
     board.display_board();
     for _i in 0..99999 {
         get_legal_moves(&mut board);
