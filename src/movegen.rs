@@ -5,6 +5,7 @@ use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::mv::Move;
 use crate::square::{Square, EIGHTH_RANK, FILE_A, FILE_H, FIRST_RANK, SECOND_RANK, SEVENTH_RANK};
 use crate::magic::{bishop_attacks, rook_attacks};
+use crate::role::Role;
 
 // H1, G1, F1, E1, D1, C1, B1, A1
 // H2 ...
@@ -214,6 +215,12 @@ pub fn get_white_pawn_moves(board: &Board) -> Vec<Move> {
         let two_forward = one_forward << PAWN_FORWARD_SHIFT;
         if (one_forward & !board.occupied) != EMPTY_BITBOARD {
             move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, None));
+            if (one_forward & EIGHTH_RANK) != EMPTY_BITBOARD {
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Queen)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Rook)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Bishop)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Knight)));
+            }
             if ((single_pawn & SECOND_RANK) != EMPTY_BITBOARD) & ((two_forward & !board.occupied) != EMPTY_BITBOARD) {
                 move_vector.push(Move::new(&board, &single_pawn, &two_forward, &one_forward, &false, &false, None));
             }
@@ -283,6 +290,12 @@ pub fn get_black_pawn_moves(board: &Board) -> Vec<Move> {
         let two_forward = one_forward >> PAWN_FORWARD_SHIFT;
         if (one_forward & !board.occupied) != EMPTY_BITBOARD {
             move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, None));
+            if (one_forward & FIRST_RANK) != EMPTY_BITBOARD {
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Queen)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Rook)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Bishop)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Knight)));
+            }
             if ((single_pawn & SEVENTH_RANK) != EMPTY_BITBOARD) & ((two_forward & !board.occupied) != EMPTY_BITBOARD) {
                 move_vector.push(Move::new(&board, &single_pawn, &two_forward, &one_forward, &false, &false, None));
             }

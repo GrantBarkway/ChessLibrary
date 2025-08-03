@@ -65,6 +65,8 @@ impl Board {
                 self.play_castle(mv);
             } else if mv.en_passant == true {
                 self.play_en_passant(mv);
+            } else if mv.promotion != None{
+                self.play_promotion(mv);
             } else {
                 self.play_normal(mv);
             }
@@ -85,13 +87,11 @@ impl Board {
             self.play_castle(mv);
         } else if mv.en_passant == true {
             self.play_en_passant(mv);
+        } else if mv.promotion != None {
+            self.play_promotion(mv);
         } else {
             self.play_normal(mv);
         }
-
-        self.clear_square(&mv.to_square);
-        self.set_square(&mv.to_square, &mv.role, &mv.colour);
-        self.clear_square(&mv.from_square);
         
         self.swap_turn();
 
@@ -135,6 +135,7 @@ impl Board {
     pub fn play_en_passant(&mut self, mv: Move) {
         let opponent_pawn_square: Bitboard;
         self.clear_square(&mv.from_square);
+        self.clear_square(&mv.to_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
         match self.turn {
             Colour::White =>  {
@@ -146,6 +147,12 @@ impl Board {
                 self.clear_square(&opponent_pawn_square);
             }
         }
+    }
+    
+    pub fn play_promotion(&mut self, mv: Move) {
+        self.clear_square(&mv.to_square);
+        self.clear_square(&mv.from_square);
+        self.set_square(&mv.to_square, &mv.promotion, &mv.colour);
     }
     
     // Swaps the board turn
