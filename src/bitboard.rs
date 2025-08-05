@@ -1,6 +1,7 @@
 use std::fmt;
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, Shr};
 use crate::square::{EIGHTH_RANK, FIFTH_RANK, FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FIRST_RANK, FOURTH_RANK, SECOND_RANK, SEVENTH_RANK, SIXTH_RANK, THIRD_RANK};
+use arrayvec::ArrayVec;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Bitboard(pub u64);
@@ -9,8 +10,8 @@ pub const EMPTY_BITBOARD: Bitboard = Bitboard(0);
 
 impl Bitboard {
     // Splits a bitboard with multiple 1s into a vector of component bitboards containing only one 1 in it
-    pub fn get_component_bitboards(&self) -> Vec<Bitboard> {
-        let mut bitboard_vector = Vec::new();
+    pub fn get_component_bitboards(&self) -> ArrayVec::<Bitboard, 64> {
+        let mut bitboard_vector = ArrayVec::<Bitboard, 64>::new();
         let mut bitboard_copy = self.clone().0 as i64;
         let mut lowest_set_bit: i64;
         while bitboard_copy != 0 {

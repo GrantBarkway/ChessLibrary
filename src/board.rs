@@ -6,6 +6,7 @@ use crate::movegen::{get_black_attacks, get_legal_moves, get_white_attacks};
 use crate::castle::{ByCastleSide};
 use crate::square::Square;
 
+
 // Order of board
 // ....
 //0b1000000000000000,0b100000000000000,0b10000000000000,0b1000000000000,0b100000000000,0b10000000000,0b1000000000,0b100000000

@@ -250,13 +250,13 @@ const fn bootstrap_magics() -> [u64; 88772] {
     return table;
 }
 
-pub const fn rook_attacks(sq: Bitboard, occupied: Bitboard) -> Bitboard {
+pub const fn rook_attacks(sq: &Bitboard, occupied: &Bitboard) -> Bitboard {
     let m = &ROOK_MAGICS[sq.trailing_zeros() as usize];
     let idx = (m.factor.wrapping_mul(occupied.0 & m.mask) >> (64 - 12)) as usize + m.offset;
     Bitboard(ATTACKS[idx])
 }
 
-pub const fn bishop_attacks(sq: Bitboard, occupied: Bitboard) -> Bitboard {
+pub const fn bishop_attacks(sq: &Bitboard, occupied: &Bitboard) -> Bitboard {
     let m = &BISHOP_MAGICS[sq.trailing_zeros() as usize];
     let idx = (m.factor.wrapping_mul(occupied.0 & m.mask) >> (64 - 9)) as usize + m.offset;
     Bitboard(ATTACKS[idx])

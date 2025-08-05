@@ -1,16 +1,13 @@
 use chesslibrary::board::Board;
 use chesslibrary::movegen::{get_legal_moves};
-use chesslibrary::bitboard::{bitboard_to_string_move, Bitboard, EMPTY_BITBOARD};
-use chesslibrary::mv::Move;
-use chesslibrary::square::Square;
-use chesslibrary::role::Role;
+use chesslibrary::bitboard::{bitboard_to_string_move, Bitboard};
 
 fn main() {
     use std::time::Instant;
     let now = Instant::now();
     let mut board = Board::new();
     board.display_board();
-    for _i in 0..99999 {
+    for _i in 0..999999 {
         get_legal_moves(&mut board);
     }
     
