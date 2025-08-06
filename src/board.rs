@@ -166,15 +166,20 @@ impl Board {
     }
     
     // Determines if the king is in check on a given board
-    pub fn is_check(&self, colour_to_check: Colour) -> bool {
+    pub fn is_check(&self, colour_to_check: Colour, attack_bitboard: &mut Bitboard) -> bool {
         let king_square: Bitboard;
-        let attack_squares: Bitboard;
         match colour_to_check {
-            Colour::White => (king_square, attack_squares) = (self.colour.white & self.role.king, get_black_attacks(&self)),
-            Colour::Black => (king_square, attack_squares) = (self.colour.black & self.role.king, get_white_attacks(&self)),
+            Colour::White => {
+                king_square = self.colour.white & self.role.king;
+                get_black_attacks(&self, attack_bitboard);
+            }
+            Colour::Black => {
+                king_square = self.colour.black & self.role.king;
+                get_white_attacks(&self, attack_bitboard);
+            }
         }
         
-        if king_square & attack_squares == EMPTY_BITBOARD {
+        if king_square & *attack_bitboard == EMPTY_BITBOARD {
             return false;
         } else {
             return true;

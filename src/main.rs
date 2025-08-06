@@ -1,13 +1,15 @@
 use chesslibrary::board::Board;
 use chesslibrary::movegen::{get_legal_moves};
-use chesslibrary::bitboard::{bitboard_to_string_move, Bitboard};
+use chesslibrary::bitboard::{bitboard_to_string_move};
+
+const TO_TEST: i128 = 999999;
 
 fn main() {
     use std::time::Instant;
     let now = Instant::now();
     let mut board = Board::new();
     board.display_board();
-    for _i in 0..999999 {
+    for _i in 0..TO_TEST {
         get_legal_moves(&mut board);
     }
     
@@ -16,5 +18,10 @@ fn main() {
     }
     
     let elapsed = now.elapsed();
+    
+    let boards_per_second = TO_TEST * 1000000 / elapsed.as_micros() as i128;
+    eprintln!("{}", elapsed.as_micros());
+    
     println!("Elapsed: {:.2?}", elapsed);
+    println!("Nodes per second: {:.2?}", boards_per_second);
 }
