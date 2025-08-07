@@ -165,24 +165,41 @@ impl Board {
         }
     }
     
-    // Determines if the king is in check on a given board
-    pub fn is_check(&self, colour_to_check: Colour, attack_bitboard: &mut Bitboard) -> bool {
+    // Determines if the king of specified colour is in check on a given board
+    pub fn is_check(&self, colour_to_check: &Colour) -> bool {
+        let mut attack_bitboard = Bitboard(0);
         let king_square: Bitboard;
         match colour_to_check {
             Colour::White => {
                 king_square = self.colour.white & self.role.king;
-                get_black_attacks(&self, attack_bitboard);
+                get_black_attacks(&self, &mut attack_bitboard);
             }
             Colour::Black => {
                 king_square = self.colour.black & self.role.king;
-                get_white_attacks(&self, attack_bitboard);
+                get_white_attacks(&self, &mut attack_bitboard);
             }
         }
         
-        if king_square & *attack_bitboard == EMPTY_BITBOARD {
+        if king_square & attack_bitboard == EMPTY_BITBOARD {
             return false;
         } else {
             return true;
+        }
+    }
+
+    pub fn is_checkmate(&self, colour_to_check: &Colour) -> bool {
+        if self.is_check(colour_to_check) & (get_legal_moves(self).len() == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    pub fn is_stalemate(&self, colour_to_check: &Colour) -> bool {
+        if !self.is_check(colour_to_check) & (get_legal_moves(self).len() == 0) {
+            return true;
+        } else {
+            return false;
         }
     }
     

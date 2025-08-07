@@ -32,28 +32,22 @@ const BLACK_PAWN_H_FILE_ATTACK: i32 = 7;
 pub fn get_legal_moves(board: &Board) -> ArrayVec<Move, 218> {
     let mut move_vector = ArrayVec::<Move, 218>::new();
     
-    get_moves(&board, &mut move_vector);
+    match board.turn {
+        Colour::White => get_white_moves(board, &mut move_vector),
+        Colour::Black => get_black_moves(board, &mut move_vector),
+    }
     
     let mut legal_move_vector = ArrayVec::<Move, 218>::new();
-
+    
     for mv in move_vector {
         let mut board_copy = board.clone();
         board_copy.play_unsafe(mv);
-        let mut move_bitboard = Bitboard(0);
-        if board_copy.is_check(board.turn, &mut move_bitboard) == false {
+        if board_copy.is_check(&board.turn) == false {
             legal_move_vector.push(mv);
         }
     }
     
     return legal_move_vector;
-}
-
-// Generates a vector of all (not necessarily legal) moves for the side to move
-pub fn get_moves(board: &Board, move_list: &mut ArrayVec<Move, 218>) {
-    match board.turn {
-        Colour::White => get_white_moves(board, move_list),
-        Colour::Black => get_black_moves(board, move_list),
-    }
 }
 
 // Accepts and mutates an ArrayVec with a vector of all of whites legal moves
@@ -105,18 +99,18 @@ pub fn get_white_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     get_white_king_attacks(board, &mut white_king_attacks);
     for single_move in white_king_attacks.get_component_bitboards() {
         if (single_move & turn_colour).count_ones() == 0 {
-            move_vector.push(Move::new(&board, &king_bitboard, &single_move, &EMPTY_BITBOARD, &false, &false, None));
+            move_vector.push(Move::new(&board, &king_bitboard, &single_move, &EMPTY_BITBOARD, false, false, None));
         }
     }
     
     let mut black_attack_bitboard = Bitboard(0);
     get_black_attacks(board, &mut black_attack_bitboard);
     if (board.castling_rights.white.kingside == true) & (((WHITE_KINGSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((WHITE_KINGSIDE_CASTLE_CHECK_SQUARES & black_attack_bitboard) == EMPTY_BITBOARD)) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Square::G1, &EMPTY_BITBOARD, &false, &true, None))
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::G1, &EMPTY_BITBOARD, false, true, None))
     }
     
     if (board.castling_rights.white.queenside == true) & (((WHITE_QUEENSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((WHITE_QUEENSIDE_CASTLE_CHECK_SQUARES & black_attack_bitboard) == EMPTY_BITBOARD)) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Square::C1, &EMPTY_BITBOARD, &false, &true, None))
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::C1, &EMPTY_BITBOARD, false, true, None))
     }
 }
 
@@ -145,18 +139,18 @@ pub fn get_black_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     get_black_king_attacks(board, &mut black_king_attacks);
     for single_move in black_king_attacks.get_component_bitboards() {
         if (single_move & turn_colour).count_ones() == 0 {
-            move_vector.push(Move::new(&board, &king_bitboard, &single_move, &EMPTY_BITBOARD, &false, &false, None));
+            move_vector.push(Move::new(&board, &king_bitboard, &single_move, &EMPTY_BITBOARD, false, false, None));
         }
     }
     
     let mut white_attack_bitboard = Bitboard(0);
     get_white_attacks(board, &mut white_attack_bitboard);
     if (board.castling_rights.black.kingside == true) & (((BLACK_KINGSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((BLACK_KINGSIDE_CASTLE_CHECK_SQUARES & white_attack_bitboard) == EMPTY_BITBOARD)) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Square::G8, &EMPTY_BITBOARD, &false, &true, None))
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::G8, &EMPTY_BITBOARD, false, true, None))
     }
     
     if (board.castling_rights.black.queenside == true) & (((BLACK_QUEENSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((BLACK_QUEENSIDE_CASTLE_CHECK_SQUARES & white_attack_bitboard) == EMPTY_BITBOARD)) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Square::C1, &EMPTY_BITBOARD, &false, &true, None))
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::C1, &EMPTY_BITBOARD, false, true, None))
     }
 }
 
@@ -191,22 +185,22 @@ pub fn get_white_pawn_moves(board: &Board, move_vector: &mut ArrayVec<Move,218>)
         
         let a_file_attack_move = single_pawn << WHITE_PAWN_A_FILE_ATTACK;
         if (a_file_attack_move & !FILE_A & opponent_colour) != EMPTY_BITBOARD {
-            move_vector.push(Move::new(&board, &single_pawn, &a_file_attack_move, &EMPTY_BITBOARD, &false, &false, None));
+            move_vector.push(Move::new(&board, &single_pawn, &a_file_attack_move, &EMPTY_BITBOARD, false, false, None));
         }
         
         let h_file_attack_move = single_pawn << WHITE_PAWN_H_FILE_ATTACK;
         if (h_file_attack_move & !FILE_H & opponent_colour) != EMPTY_BITBOARD {
-            move_vector.push(Move::new(&board, &single_pawn, &h_file_attack_move, &EMPTY_BITBOARD, &false, &false, None));
+            move_vector.push(Move::new(&board, &single_pawn, &h_file_attack_move, &EMPTY_BITBOARD, false, false, None));
         }
         
         if let Some(ep_target) = en_passant_target_square {
             
             if (a_file_attack_move & !FILE_A & ep_target) != EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &single_pawn, &a_file_attack_move, &EMPTY_BITBOARD, &true, &false, None));
+                move_vector.push(Move::new(&board, &single_pawn, &a_file_attack_move, &EMPTY_BITBOARD, true, false, None));
             }
             
             if (h_file_attack_move & !FILE_H & ep_target) != EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &single_pawn, &h_file_attack_move, &EMPTY_BITBOARD, &true, &false, None));
+                move_vector.push(Move::new(&board, &single_pawn, &h_file_attack_move, &EMPTY_BITBOARD, true, false, None));
             }
         
         }
@@ -215,15 +209,15 @@ pub fn get_white_pawn_moves(board: &Board, move_vector: &mut ArrayVec<Move,218>)
         let one_forward = single_pawn << PAWN_FORWARD_SHIFT;
         let two_forward = one_forward << PAWN_FORWARD_SHIFT;
         if (one_forward & !board.occupied) != EMPTY_BITBOARD {
-            move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, None));
+            move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, None));
             if (one_forward & EIGHTH_RANK) != EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Queen)));
-                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Rook)));
-                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Bishop)));
-                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Knight)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, Some(Role::Queen)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, Some(Role::Rook)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, Some(Role::Bishop)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, Some(Role::Knight)));
             }
             if ((single_pawn & SECOND_RANK) != EMPTY_BITBOARD) & ((two_forward & !board.occupied) != EMPTY_BITBOARD) {
-                move_vector.push(Move::new(&board, &single_pawn, &two_forward, &one_forward, &false, &false, None));
+                move_vector.push(Move::new(&board, &single_pawn, &two_forward, &one_forward, false, false, None));
             }
         }
     }
@@ -262,22 +256,22 @@ pub fn get_black_pawn_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
 
         let a_file_attack_move = single_pawn >> BLACK_PAWN_A_FILE_ATTACK;
         if (a_file_attack_move & !FILE_A & opponent_colour) != EMPTY_BITBOARD {
-            move_vector.push(Move::new(&board, &single_pawn, &a_file_attack_move, &EMPTY_BITBOARD, &false, &false, None));
+            move_vector.push(Move::new(&board, &single_pawn, &a_file_attack_move, &EMPTY_BITBOARD, false, false, None));
         }
         
         let h_file_attack_move = single_pawn >> BLACK_PAWN_H_FILE_ATTACK;
         if (h_file_attack_move & !FILE_H & opponent_colour) != EMPTY_BITBOARD {
-            move_vector.push(Move::new(&board, &single_pawn, &h_file_attack_move, &EMPTY_BITBOARD, &false, &false, None));
+            move_vector.push(Move::new(&board, &single_pawn, &h_file_attack_move, &EMPTY_BITBOARD, false, false, None));
         }
 
         if let Some(ep_target) = en_passant_target_square {
             
             if (a_file_attack_move & !FILE_A & ep_target) != EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &single_pawn, &a_file_attack_move, &EMPTY_BITBOARD, &true, &false, None));
+                move_vector.push(Move::new(&board, &single_pawn, &a_file_attack_move, &EMPTY_BITBOARD, true, false, None));
             }
             
             if (h_file_attack_move & !FILE_H & ep_target) != EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &single_pawn, &h_file_attack_move, &EMPTY_BITBOARD, &true, &false, None));
+                move_vector.push(Move::new(&board, &single_pawn, &h_file_attack_move, &EMPTY_BITBOARD, true, false, None));
             }
         
         }
@@ -286,15 +280,15 @@ pub fn get_black_pawn_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
         let one_forward = single_pawn >> PAWN_FORWARD_SHIFT;
         let two_forward = one_forward >> PAWN_FORWARD_SHIFT;
         if (one_forward & !board.occupied) != EMPTY_BITBOARD {
-            move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, None));
+            move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, None));
             if (one_forward & FIRST_RANK) != EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Queen)));
-                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Rook)));
-                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Bishop)));
-                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, &false, &false, Some(Role::Knight)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, Some(Role::Queen)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, Some(Role::Rook)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, Some(Role::Bishop)));
+                move_vector.push(Move::new(&board, &single_pawn, &one_forward, &EMPTY_BITBOARD, false, false, Some(Role::Knight)));
             }
             if ((single_pawn & SEVENTH_RANK) != EMPTY_BITBOARD) & ((two_forward & !board.occupied) != EMPTY_BITBOARD) {
-                move_vector.push(Move::new(&board, &single_pawn, &two_forward, &one_forward, &false, &false, None));
+                move_vector.push(Move::new(&board, &single_pawn, &two_forward, &one_forward, false, false, None));
             }
         }
     }
@@ -323,7 +317,7 @@ pub fn get_white_knight_moves(board: &Board, move_vector: &mut ArrayVec<Move, 21
     for individual_knight in knight_bitboard.get_component_bitboards() {
         for knight_move in KNIGHT_ATTACKS[individual_knight.0.trailing_zeros() as usize].get_component_bitboards() {
             if (knight_move & turn_colour).count_ones() == 0 {
-                move_vector.push(Move::new(&board, &individual_knight, &knight_move, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_knight, &knight_move, &EMPTY_BITBOARD, false, false, None));
             }
         }
     }
@@ -346,7 +340,7 @@ pub fn get_black_knight_moves(board: &Board, move_vector: &mut ArrayVec<Move, 21
     for individual_knight in knight_bitboard.get_component_bitboards() {
         for knight_move in KNIGHT_ATTACKS[individual_knight.0.trailing_zeros() as usize].get_component_bitboards() {
             if (knight_move & turn_colour).count_ones() == 0 {
-                move_vector.push(Move::new(&board, &individual_knight, &knight_move, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_knight, &knight_move, &EMPTY_BITBOARD, false, false, None));
             }
         }
     }
@@ -368,7 +362,7 @@ pub fn get_white_bishop_moves(board: &Board, move_vector: &mut ArrayVec<Move, 21
         let bishop_attacks = bishop_attacks(&individual_bishop, &board.occupied);
         for mv in bishop_attacks.get_component_bitboards() {
             if (turn_colour & mv) == EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &individual_bishop, &mv, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_bishop, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
     }
@@ -390,7 +384,7 @@ pub fn get_black_bishop_moves(board: &Board, move_vector: &mut ArrayVec<Move, 21
         let bishop_attacks = bishop_attacks(&individual_bishop, &board.occupied);
         for mv in bishop_attacks.get_component_bitboards() {
             if (turn_colour & mv) == EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &individual_bishop, &mv, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_bishop, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
     }
@@ -412,7 +406,7 @@ pub fn get_white_rook_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
         let rook_attacks = rook_attacks(&individual_rook, &board.occupied);
         for mv in rook_attacks.get_component_bitboards() {
             if (turn_colour & mv) == EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &individual_rook, &mv, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_rook, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
     }
@@ -434,7 +428,7 @@ pub fn get_black_rook_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
         let rook_attacks = rook_attacks(&individual_rook, &board.occupied);
         for mv in rook_attacks.get_component_bitboards() {
             if (turn_colour & mv) == EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &individual_rook, &mv, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_rook, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
     }
@@ -456,14 +450,14 @@ pub fn get_white_queen_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218
         let rook_attacks = rook_attacks(&individual_queen, &board.occupied);
         for mv in rook_attacks.get_component_bitboards() {
             if (turn_colour & mv) == EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
         
         let bishop_attacks = bishop_attacks(&individual_queen, &board.occupied);
         for mv in bishop_attacks.get_component_bitboards() {
             if (turn_colour & mv) == EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
     }
@@ -486,14 +480,14 @@ pub fn get_black_queen_moves(board: &Board, move_vector: &mut ArrayVec<Move,218>
         let rook_attacks = rook_attacks(&individual_queen, &board.occupied);
         for mv in rook_attacks.get_component_bitboards() {
             if (turn_colour & mv) == EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
         
         let bishop_attacks = bishop_attacks(&individual_queen, &board.occupied);
         for mv in bishop_attacks.get_component_bitboards() {
             if (turn_colour & mv) == EMPTY_BITBOARD {
-                move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, &false, &false, None));
+                move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
     }

@@ -27,15 +27,15 @@ pub const EMPTY_MOVE: Move = Move {
 };
 
 impl Move {
-    pub fn new(board: &Board, from_square: &Bitboard, to_square: &Bitboard, en_passant_target_square: &Bitboard, en_passant_bool: &bool, castle_bool: &bool, promotion_piece: Option<Role>) -> Move {
+    pub fn new(board: &Board, from_square: &Bitboard, to_square: &Bitboard, en_passant_target_square: &Bitboard, en_passant_bool: bool, castle_bool: bool, promotion_piece: Option<Role>) -> Move {
         Move {
             role: if let Some(get_role) = get_role(board, &from_square) {Some(get_role)} else {None},
             colour: if let Some(get_colour) = get_colour(board, from_square) {Some(get_colour)} else {None},
             from_square: *from_square,
             to_square: *to_square,
             en_passant_target: *en_passant_target_square,
-            en_passant: *en_passant_bool,
-            castle: *castle_bool,
+            en_passant: en_passant_bool,
+            castle: castle_bool,
             promotion: promotion_piece,
         }
     }
