@@ -61,13 +61,15 @@ pub fn get_white_moves(board: &Board, move_list: &mut ArrayVec<Move, 218>) {
 }
 
 // Accepts and mutates a bitboard of all of whites legal attacks
-pub fn get_white_attacks(board: &Board, attack_bitboard: &mut Bitboard) {
-    get_white_king_attacks(board, attack_bitboard);
-    get_white_pawn_attacks(board, attack_bitboard);
-    get_white_knight_attacks(board, attack_bitboard);
-    get_white_bishop_attacks(board, attack_bitboard);
-    get_white_rook_attacks(board, attack_bitboard);
-    get_white_queen_attacks(board, attack_bitboard);
+pub fn get_white_attacks(board: &Board) -> Bitboard {
+    let mut attack_bitboard = Bitboard(0);
+    attack_bitboard |= get_white_king_attacks(board);
+    attack_bitboard |= get_white_pawn_attacks(board, &(board.colour.white & board.role.pawn));
+    attack_bitboard |= get_knight_attacks(board, &(board.colour.white & board.role.knight));
+    attack_bitboard |= get_bishop_attacks(board, &(board.colour.white & board.role.bishop));
+    attack_bitboard |= get_rook_attacks(board, &(board.colour.white & board.role.rook));
+    attack_bitboard |= get_queen_attacks(board, &(board.colour.white & board.role.queen));
+    return attack_bitboard;
 }
 
 // Accepts and mutates an ArrayVec with a vector of all of blacks legal moves
@@ -81,13 +83,15 @@ pub fn get_black_moves(board: &Board, move_list: &mut ArrayVec<Move, 218>) {
 }
 
 // Accepts and mutates a bitboard of all of blacks legal attacks
-pub fn get_black_attacks(board: &Board, attack_bitboard: &mut Bitboard) {
-    get_black_king_attacks(board, attack_bitboard);
-    get_black_pawn_attacks(board, attack_bitboard);
-    get_black_knight_attacks(board, attack_bitboard);
-    get_black_bishop_attacks(board, attack_bitboard);
-    get_black_rook_attacks(board, attack_bitboard);
-    get_black_queen_attacks(board, attack_bitboard);
+pub fn get_black_attacks(board: &Board) -> Bitboard {
+    let mut attack_bitboard = Bitboard(0);
+    attack_bitboard |= get_black_king_attacks(board);
+    attack_bitboard |= get_black_pawn_attacks(board, &(board.colour.black & board.role.pawn));
+    attack_bitboard |= get_knight_attacks(board, &(board.colour.black & board.role.knight));
+    attack_bitboard |= get_bishop_attacks(board, &(board.colour.black & board.role.bishop));
+    attack_bitboard |= get_rook_attacks(board, &(board.colour.black & board.role.rook));
+    attack_bitboard |= get_queen_attacks(board, &(board.colour.black & board.role.queen));
+    return attack_bitboard;
 }
 
 // Accepts and mutates an ArrayVec with all of whites legal king moves
@@ -95,16 +99,14 @@ pub fn get_white_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     let king_bitboard: Bitboard = board.colour.white & board.role.king;
     let turn_colour: Bitboard = board.colour.white;
     
-    let mut white_king_attacks = Bitboard(0);
-    get_white_king_attacks(board, &mut white_king_attacks);
+    let white_king_attacks = get_white_king_attacks(board);
     for single_move in white_king_attacks.get_component_bitboards() {
         if (single_move & turn_colour).count_ones() == 0 {
             move_vector.push(Move::new(&board, &king_bitboard, &single_move, &EMPTY_BITBOARD, false, false, None));
         }
     }
     
-    let mut black_attack_bitboard = Bitboard(0);
-    get_black_attacks(board, &mut black_attack_bitboard);
+    let black_attack_bitboard = get_black_attacks(board);
     if (board.castling_rights.white.kingside == true) & (((WHITE_KINGSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((WHITE_KINGSIDE_CASTLE_CHECK_SQUARES & black_attack_bitboard) == EMPTY_BITBOARD)) {
         move_vector.push(Move::new(&board, &king_bitboard, &Square::G1, &EMPTY_BITBOARD, false, true, None))
     }
@@ -115,18 +117,21 @@ pub fn get_white_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
 }
 
 // Accepts and mutates a Bitboard with all of whites king attacks
-pub fn get_white_king_attacks(board: &Board, move_bitboard: &mut Bitboard) {
+pub fn get_white_king_attacks(board: &Board) -> Bitboard {
+    let mut move_bitboard = Bitboard(0);
     let king_bitboard: Bitboard = board.colour.white & board.role.king;
     
-    *move_bitboard |= (king_bitboard & !FILE_A) << 1;
-    *move_bitboard |= (king_bitboard & !FILE_H) >> 1;
-    *move_bitboard |= (king_bitboard & !FIRST_RANK) >> 8;
-    *move_bitboard |= (king_bitboard & !EIGHTH_RANK) << 8;
+    move_bitboard |= (king_bitboard & !FILE_A) << 1;
+    move_bitboard |= (king_bitboard & !FILE_H) >> 1;
+    move_bitboard |= (king_bitboard & !FIRST_RANK) >> 8;
+    move_bitboard |= (king_bitboard & !EIGHTH_RANK) << 8;
     
-    *move_bitboard |= (king_bitboard & !(FILE_A|FIRST_RANK)) >> 7;
-    *move_bitboard |= (king_bitboard & !(FILE_A|EIGHTH_RANK)) << 9;
-    *move_bitboard |= (king_bitboard & !(FILE_H|FIRST_RANK)) >> 9;
-    *move_bitboard |= (king_bitboard & !(FILE_H|EIGHTH_RANK)) << 7;
+    move_bitboard |= (king_bitboard & !(FILE_A|FIRST_RANK)) >> 7;
+    move_bitboard |= (king_bitboard & !(FILE_A|EIGHTH_RANK)) << 9;
+    move_bitboard |= (king_bitboard & !(FILE_H|FIRST_RANK)) >> 9;
+    move_bitboard |= (king_bitboard & !(FILE_H|EIGHTH_RANK)) << 7;
+
+    return move_bitboard;
 }
 
 // Accepts and mutates an ArrayVec with all of blacks legal king moves
@@ -135,16 +140,14 @@ pub fn get_black_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     let turn_colour: Bitboard = board.colour.black;
     
     
-    let mut black_king_attacks = Bitboard(0);
-    get_black_king_attacks(board, &mut black_king_attacks);
+    let black_king_attacks = get_black_king_attacks(board);
     for single_move in black_king_attacks.get_component_bitboards() {
         if (single_move & turn_colour).count_ones() == 0 {
             move_vector.push(Move::new(&board, &king_bitboard, &single_move, &EMPTY_BITBOARD, false, false, None));
         }
     }
     
-    let mut white_attack_bitboard = Bitboard(0);
-    get_white_attacks(board, &mut white_attack_bitboard);
+    let white_attack_bitboard = get_white_attacks(board);
     if (board.castling_rights.black.kingside == true) & (((BLACK_KINGSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((BLACK_KINGSIDE_CASTLE_CHECK_SQUARES & white_attack_bitboard) == EMPTY_BITBOARD)) {
         move_vector.push(Move::new(&board, &king_bitboard, &Square::G8, &EMPTY_BITBOARD, false, true, None))
     }
@@ -155,18 +158,21 @@ pub fn get_black_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
 }
 
 // Accepts and mutates a Bitboard with all of blacks king attacks
-pub fn get_black_king_attacks(board: &Board, move_bitboard: &mut Bitboard) {
+pub fn get_black_king_attacks(board: &Board) -> Bitboard {
+    let mut move_bitboard = Bitboard(0);
     let king_bitboard: Bitboard = board.colour.black & board.role.king;
     
-    *move_bitboard |= (king_bitboard & !FILE_A) << 1;
-    *move_bitboard |= (king_bitboard & !FILE_H) >> 1;
-    *move_bitboard |= (king_bitboard & !FIRST_RANK) >> 8;
-    *move_bitboard |= (king_bitboard & !EIGHTH_RANK) << 8;
+    move_bitboard |= (king_bitboard & !FILE_A) << 1;
+    move_bitboard |= (king_bitboard & !FILE_H) >> 1;
+    move_bitboard |= (king_bitboard & !FIRST_RANK) >> 8;
+    move_bitboard |= (king_bitboard & !EIGHTH_RANK) << 8;
     
-    *move_bitboard |= (king_bitboard & !(FILE_A|FIRST_RANK)) >> 7;
-    *move_bitboard |= (king_bitboard & !(FILE_A|EIGHTH_RANK)) << 9;
-    *move_bitboard |= (king_bitboard & !(FILE_H|FIRST_RANK)) >> 9;
-    *move_bitboard |= (king_bitboard & !(FILE_H|EIGHTH_RANK)) << 7;
+    move_bitboard |= (king_bitboard & !(FILE_A|FIRST_RANK)) >> 7;
+    move_bitboard |= (king_bitboard & !(FILE_A|EIGHTH_RANK)) << 9;
+    move_bitboard |= (king_bitboard & !(FILE_H|FIRST_RANK)) >> 9;
+    move_bitboard |= (king_bitboard & !(FILE_H|EIGHTH_RANK)) << 7;
+
+    return move_bitboard;
 }
 
 // Accepts and mutates an ArrayVec with all of whites legal pawn moves
@@ -224,20 +230,22 @@ pub fn get_white_pawn_moves(board: &Board, move_vector: &mut ArrayVec<Move,218>)
 }
 
 // Accepts and mutates a Bitboard with all of whites pawn attacks
-pub fn get_white_pawn_attacks(board: &Board, pawn_attack_bitboard: &mut Bitboard) {
-    let pawn_bitboard: Bitboard = board.colour.white & board.role.pawn;
+pub fn get_white_pawn_attacks(_board: &Board, pawn_bitboard: &Bitboard) -> Bitboard {
+    let mut pawn_attack_bitboard = Bitboard(0);
     
     for individual_pawn in pawn_bitboard.get_component_bitboards() {
         let mut attack_moves = individual_pawn << WHITE_PAWN_A_FILE_ATTACK;
         if (attack_moves & !FILE_A) != EMPTY_BITBOARD {
-            *pawn_attack_bitboard |= attack_moves;
+            pawn_attack_bitboard |= attack_moves;
         }
         
         attack_moves = individual_pawn << WHITE_PAWN_H_FILE_ATTACK;
         if (attack_moves & !FILE_H) != EMPTY_BITBOARD {
-            *pawn_attack_bitboard |= attack_moves;
+            pawn_attack_bitboard |= attack_moves;
         }
     }
+
+    return pawn_attack_bitboard;
 }
 
 // Accepts and mutates an ArrayVec with all of blacks legal pawn moves
@@ -294,20 +302,22 @@ pub fn get_black_pawn_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     }
 }
 
-pub fn get_black_pawn_attacks(board: &Board, pawn_attack_bitboard: &mut Bitboard) {
-    let pawn_bitboard: Bitboard = board.colour.black & board.role.pawn;
+pub fn get_black_pawn_attacks(_board: &Board, pawn_bitboard: &Bitboard) -> Bitboard {
+    let mut pawn_attack_bitboard = Bitboard(0);
     
     for individual_pawn in pawn_bitboard.get_component_bitboards() {
         let mut attack_moves = individual_pawn >> BLACK_PAWN_A_FILE_ATTACK;
         if (attack_moves & !FILE_A) != EMPTY_BITBOARD {
-            *pawn_attack_bitboard |= attack_moves;
+            pawn_attack_bitboard |= attack_moves;
         }
         
         attack_moves = individual_pawn >> BLACK_PAWN_H_FILE_ATTACK;
         if (attack_moves & !FILE_H) != EMPTY_BITBOARD {
-            *pawn_attack_bitboard |= attack_moves;
+            pawn_attack_bitboard |= attack_moves;
         }
     }
+
+    return pawn_attack_bitboard;
 }
 
 pub fn get_white_knight_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>) {
@@ -323,16 +333,6 @@ pub fn get_white_knight_moves(board: &Board, move_vector: &mut ArrayVec<Move, 21
     }
 }
 
-pub fn get_white_knight_attacks(board: &Board, knight_attack_bitboard: &mut Bitboard) {
-    let knight_bitboard = board.colour.white & board.role.knight;
-    
-    for individual_knight in knight_bitboard.get_component_bitboards() {
-        for knight_attack in KNIGHT_ATTACKS[individual_knight.0.trailing_zeros() as usize].get_component_bitboards() {
-            *knight_attack_bitboard |= knight_attack;
-        }
-    }
-} 
-
 pub fn get_black_knight_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>) {
     let knight_bitboard = board.colour.black & board.role.knight;
     let turn_colour: Bitboard = board.colour.black;
@@ -346,12 +346,14 @@ pub fn get_black_knight_moves(board: &Board, move_vector: &mut ArrayVec<Move, 21
     }
 }
 
-pub fn get_black_knight_attacks(board: &Board, knight_attack_bitboard: &mut Bitboard) {
-    let knight_bitboard = board.colour.black & board.role.knight;
-    
+pub fn get_knight_attacks(_board: &Board, knight_bitboard: &Bitboard) -> Bitboard {
+    let mut knight_attack_bitboard = Bitboard(0);
+
     for individual_knight in knight_bitboard.get_component_bitboards() {
-        *knight_attack_bitboard |= KNIGHT_ATTACKS[individual_knight.0.trailing_zeros() as usize];
+        knight_attack_bitboard |= KNIGHT_ATTACKS[individual_knight.0.trailing_zeros() as usize];
     }
+
+    return knight_attack_bitboard;
 } 
 
 pub fn get_white_bishop_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>) {
@@ -365,14 +367,6 @@ pub fn get_white_bishop_moves(board: &Board, move_vector: &mut ArrayVec<Move, 21
                 move_vector.push(Move::new(&board, &individual_bishop, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
-    }
-}
-
-pub fn get_white_bishop_attacks(board: &Board, bishop_attack_bitboard: &mut Bitboard) {
-    let bishop_bitboard: Bitboard = board.colour.white & board.role.bishop;
-    
-    for individual_bishop in bishop_bitboard.get_component_bitboards() {
-        *bishop_attack_bitboard |= bishop_attacks(&individual_bishop, &board.occupied);
     }
 }
 
@@ -390,12 +384,14 @@ pub fn get_black_bishop_moves(board: &Board, move_vector: &mut ArrayVec<Move, 21
     }
 }
 
-pub fn get_black_bishop_attacks(board: &Board, bishop_attack_bitboard: &mut Bitboard) {
-    let bishop_bitboard: Bitboard = board.colour.black & board.role.bishop;
+pub fn get_bishop_attacks(board: &Board, bishop_bitboard: &Bitboard) -> Bitboard {
+    let mut bishop_attack_bitboard = Bitboard(0);
     
     for individual_bishop in bishop_bitboard.get_component_bitboards() {
-        *bishop_attack_bitboard |= bishop_attacks(&individual_bishop, &board.occupied);
+        bishop_attack_bitboard |= bishop_attacks(&individual_bishop, &board.occupied);
     }
+
+    return bishop_attack_bitboard;
 }
 
 pub fn get_white_rook_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>) {
@@ -409,14 +405,6 @@ pub fn get_white_rook_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
                 move_vector.push(Move::new(&board, &individual_rook, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
-    }
-}
-
-pub fn get_white_rook_attacks(board: &Board, rook_attack_bitboard: &mut Bitboard) {
-    let rook_bitboard: Bitboard = board.colour.white & board.role.rook;
-    
-    for individual_rook in rook_bitboard.get_component_bitboards() {
-        *rook_attack_bitboard |= rook_attacks(&individual_rook, &board.occupied);
     }
 }
 
@@ -434,12 +422,14 @@ pub fn get_black_rook_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     }
 }
 
-pub fn get_black_rook_attacks(board: &Board, rook_attack_bitboard: &mut Bitboard) {
-    let rook_bitboard: Bitboard = board.colour.black & board.role.rook;
-    
+pub fn get_rook_attacks(board: &Board, rook_bitboard: &Bitboard) -> Bitboard {
+    let mut rook_attack_bitboard = Bitboard(0);
+
     for individual_rook in rook_bitboard.get_component_bitboards() {
-        *rook_attack_bitboard |= rook_attacks(&individual_rook, &board.occupied);
+        rook_attack_bitboard |= rook_attacks(&individual_rook, &board.occupied);
     }
+
+    return rook_attack_bitboard;
 }
 
 pub fn get_white_queen_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>) {
@@ -460,15 +450,6 @@ pub fn get_white_queen_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218
                 move_vector.push(Move::new(&board, &individual_queen, &mv, &EMPTY_BITBOARD, false, false, None));
             }
         }
-    }
-}
-
-pub fn get_white_queen_attacks(board: &Board, queen_attack_bitboard: &mut Bitboard) {
-    let queen_bitboard: Bitboard = board.colour.white & board.role.queen;
-    
-    for individual_queen in queen_bitboard.get_component_bitboards() {
-        *queen_attack_bitboard |= rook_attacks(&individual_queen, &board.occupied);
-        *queen_attack_bitboard |= bishop_attacks(&individual_queen, &board.occupied);
     }
 }
 
@@ -493,11 +474,13 @@ pub fn get_black_queen_moves(board: &Board, move_vector: &mut ArrayVec<Move,218>
     }
 }
 
-pub fn get_black_queen_attacks(board: &Board, queen_attack_bitboard: &mut Bitboard) {
-    let queen_bitboard: Bitboard = board.colour.black & board.role.queen;
-    
+pub fn get_queen_attacks(board: &Board, queen_bitboard: &Bitboard) -> Bitboard {
+    let mut queen_attack_bitboard = Bitboard(0);
+
     for individual_queen in queen_bitboard.get_component_bitboards() {
-        *queen_attack_bitboard |= rook_attacks(&individual_queen, &board.occupied);
-        *queen_attack_bitboard |= bishop_attacks(&individual_queen, &board.occupied);
+        queen_attack_bitboard |= rook_attacks(&individual_queen, &board.occupied);
+        queen_attack_bitboard |= bishop_attacks(&individual_queen, &board.occupied);
     }
+
+    return queen_attack_bitboard
 }

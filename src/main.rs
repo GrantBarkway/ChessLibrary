@@ -2,7 +2,9 @@ use chesslibrary::board::Board;
 use chesslibrary::engine::search::minmax;
 //use chesslibrary::engine::eval::evaluate;
 use chesslibrary::movegen::{get_legal_moves};
-use chesslibrary::bitboard::{bitboard_to_string_move};
+use chesslibrary::bitboard::{bitboard_to_string_move, EMPTY_BITBOARD};
+use chesslibrary::mv::Move;
+use chesslibrary::square::Square;
 
 const TO_TEST: i128 = 1;
 
@@ -13,7 +15,7 @@ fn main() {
     board.display_board();
     for _i in 0..TO_TEST {
         //evaluate(&board, &board.turn);
-        eprintln!("{}", minmax(&board, 8, true, i32::MIN, i32::MAX, &board.turn));
+        eprintln!("{}", minmax(&board, 7, true, i32::MIN, i32::MAX, &board.turn));
         //get_legal_moves(&mut board);
     }
     

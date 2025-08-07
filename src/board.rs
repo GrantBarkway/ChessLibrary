@@ -2,7 +2,7 @@ use crate::mv::Move;
 use crate::role::{Role, ByRole};
 use crate::colour::{Colour, ByColour};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
-use crate::movegen::{get_black_attacks, get_legal_moves, get_white_attacks};
+use crate::movegen::{get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_legal_moves, get_queen_attacks, get_rook_attacks, get_white_pawn_attacks};
 use crate::castle::{ByCastleSide};
 use crate::square::Square;
 
@@ -167,23 +167,47 @@ impl Board {
     
     // Determines if the king of specified colour is in check on a given board
     pub fn is_check(&self, colour_to_check: &Colour) -> bool {
-        let mut attack_bitboard = Bitboard(0);
         let king_square: Bitboard;
         match colour_to_check {
+
             Colour::White => {
                 king_square = self.colour.white & self.role.king;
-                get_black_attacks(&self, &mut attack_bitboard);
+                
+                // white pawn attacks are opposite of black pawn attacks
+                if get_white_pawn_attacks(self, &king_square) & (self.colour.black & self.role.pawn) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_knight_attacks(self, &king_square) & (self.colour.black & self.role.knight) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_bishop_attacks(self, &king_square) & (self.colour.black & self.role.bishop) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_rook_attacks(self, &king_square) & (self.colour.black & self.role.rook) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_queen_attacks(self, &king_square) & (self.colour.black & self.role.queen) != EMPTY_BITBOARD {
+                    return true;
+                } else {
+                    return false;
+                }
             }
+            
             Colour::Black => {
                 king_square = self.colour.black & self.role.king;
-                get_white_attacks(&self, &mut attack_bitboard);
+                
+                // white pawn attacks are opposite of black pawn attacks
+                if get_black_pawn_attacks(self, &king_square) & (self.colour.white & self.role.pawn) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_knight_attacks(self, &king_square) & (self.colour.white & self.role.knight) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_bishop_attacks(self, &king_square) & (self.colour.white & self.role.bishop) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_rook_attacks(self, &king_square) & (self.colour.white & self.role.rook) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_queen_attacks(self, &king_square) & (self.colour.white & self.role.queen) != EMPTY_BITBOARD {
+                    return true;
+                } else {
+                    return false;
+                }
             }
-        }
-        
-        if king_square & attack_bitboard == EMPTY_BITBOARD {
-            return false;
-        } else {
-            return true;
+
         }
     }
 
