@@ -15,12 +15,12 @@ fn main() {
     board.display_board();
     for _i in 0..TO_TEST {
         //evaluate(&board, &board.turn);
-        eprintln!("{}", minmax(&board, 7, true, i32::MIN, i32::MAX, &board.turn));
+        eprintln!("Evaluation: {}", minmax(&board, 8, true, i32::MIN, i32::MAX, &board.turn));
         //get_legal_moves(&mut board);
     }
     
     for i in get_legal_moves(&mut board) {
-        println!("{:?} {} to {} (castle: {}, en_passant_target_square: {}, promotion: {:?})", i.role, bitboard_to_string_move(i.from_square), bitboard_to_string_move(i.to_square), i.castle, i.en_passant_target, i.promotion);
+        println!("{:?} {} to {} (castle: {}, en_passant_target_square: {}, promotion: {:?}, capture: {:?})", i.role, bitboard_to_string_move(i.from_square), bitboard_to_string_move(i.to_square), i.castle, i.en_passant_target, i.promotion, i.capture);
     }
     
     let elapsed = now.elapsed();

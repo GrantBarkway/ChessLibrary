@@ -14,18 +14,17 @@ use crate::square::Square;
 
 #[derive(Debug, Clone)]
 pub struct Board {
-    pub move_list: Vec<Move>,
     pub role: ByRole<Bitboard>,
     pub colour: ByColour<Bitboard>,
     pub occupied: Bitboard,
     pub turn: Colour,
     pub castling_rights: ByColour<ByCastleSide<bool>>,
+    pub last_move: Option<Move>,
 }
 
 impl Board {
     pub fn new() -> Board {
         Board {
-            move_list: Vec::new(),
             role: ByRole {
                 pawn: Bitboard(0x00ff_0000_0000_ff00),
                 knight: Bitboard(0x4200_0000_0000_0042),
@@ -51,7 +50,8 @@ impl Board {
                         kingside: true,
                         queenside: true,
                     }
-            }
+            },
+            last_move: None,
         }
     }
     
@@ -74,7 +74,7 @@ impl Board {
             
             self.swap_turn();
             
-            self.move_list.push(mv);
+            self.last_move = Some(mv);
         } else {
             panic!("Not a legal move!")
         }
@@ -96,7 +96,7 @@ impl Board {
         
         self.swap_turn();
 
-        self.move_list.push(mv);
+        self.last_move = Some(mv);
     }
     
     pub fn play_normal(&mut self, mv: Move) {

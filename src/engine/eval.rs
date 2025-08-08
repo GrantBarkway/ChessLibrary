@@ -1,5 +1,4 @@
 use crate::board::Board;
-use crate::bitboard::Bitboard;
 use crate::colour::Colour;
 
 pub fn evaluate(board: &Board, colour: &Colour) -> i32 {

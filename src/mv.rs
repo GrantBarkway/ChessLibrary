@@ -1,4 +1,4 @@
-use crate::bitboard::Bitboard;
+use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::role::{Role, get_role};
 use crate::board::Board;
 use crate::colour::{Colour, get_colour};
@@ -13,6 +13,7 @@ pub struct Move {
     pub en_passant: bool,
     pub castle: bool,
     pub promotion: Option<Role>,
+    pub capture: bool,
 }
 
 pub const EMPTY_MOVE: Move = Move {
@@ -24,6 +25,7 @@ pub const EMPTY_MOVE: Move = Move {
     en_passant: false,
     castle: false,
     promotion: None,
+    capture: false,
 };
 
 impl Move {
@@ -37,6 +39,7 @@ impl Move {
             en_passant: en_passant_bool,
             castle: castle_bool,
             promotion: promotion_piece,
+            capture: if (to_square & board.occupied) == EMPTY_BITBOARD {false} else {true},
         }
     }
 }

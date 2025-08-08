@@ -2,13 +2,14 @@ use crate::colour::Colour;
 use crate::board::{Board};
 use crate::movegen::get_legal_moves;
 use crate::engine::eval::evaluate;
+use crate::mv::Move;
 use std::cmp;
+use arrayvec::ArrayVec;
 
 pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32, mut beta: i32, bot_colour: &Colour) -> i32 {
     
     if depth == 0 {
-        return evaluate(&current_board, &bot_colour);
-        //return quiesce(current_board, bot_colour, is_bots_move, alpha, beta);
+        return quiesce(current_board, bot_colour, is_bots_move, alpha, beta);
     }
     
     if is_bots_move {
@@ -58,5 +59,45 @@ pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: 
         }
 
         return min_eval;
+    }
+}
+
+// Quiescence search to only evaluate positions with no tactical move to prevent bad trades when max depth is reached
+fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut alpha: i32, mut beta: i32) -> i32 {
+    let stand_pat = evaluate(current_board, bot_colour);
+    let mut best_value = stand_pat;
+    
+    if is_bots_move {
+        if best_value >= beta {
+            return best_value;
+        }
+        alpha = cmp::max(alpha, best_value);
+        for mv in get_legal_moves(current_board).iter().filter(|mv| mv.capture) {
+            let mut new_board = current_board.clone();
+            new_board.play_unsafe(*mv);
+            let score = quiesce(&new_board, bot_colour, false, alpha, beta);
+            best_value = cmp::max(best_value, score);
+            alpha = cmp::max(alpha,best_value);
+            if alpha >= beta {
+                break;
+            }
+        }
+        return best_value;
+    } else {
+        if best_value <= alpha {
+            return best_value;
+        }
+        beta = cmp::min(beta, best_value);
+        for mv in get_legal_moves(current_board).iter().filter(|mv| mv.capture) {
+            let mut new_board = current_board.clone();
+            new_board.play_unsafe(*mv);
+            let score = quiesce(&new_board, bot_colour, true, alpha, beta);
+            best_value = cmp::min(best_value, score);
+            beta = cmp::min(beta,best_value);
+            if alpha >= beta {
+                break;
+            }
+        }
+        return best_value;
     }
 }

@@ -181,7 +181,7 @@ pub fn get_white_pawn_moves(board: &Board, move_vector: &mut ArrayVec<Move,218>)
     let opponent_colour: Bitboard = board.colour.black;
     let mut en_passant_target_square: Option<Bitboard> = None;
     
-    if let Some(last_move) = board.move_list.last() {
+    if let Some(last_move) = board.last_move {
         if last_move.en_passant_target != EMPTY_BITBOARD {
             en_passant_target_square = Some(last_move.en_passant_target);
         }
@@ -254,7 +254,7 @@ pub fn get_black_pawn_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     let opponent_colour: Bitboard = board.colour.white;
     let mut en_passant_target_square: Option<Bitboard> = None;
     
-    if let Some(last_move) = board.move_list.last() {
+    if let Some(last_move) = board.last_move {
         if last_move.en_passant_target != EMPTY_BITBOARD {
             en_passant_target_square = Some(last_move.en_passant_target);
         }
