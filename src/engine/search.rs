@@ -4,7 +4,30 @@ use crate::movegen::get_legal_moves;
 use crate::engine::eval::evaluate;
 use crate::mv::Move;
 use std::cmp;
-use arrayvec::ArrayVec;
+use std::sync::atomic::{AtomicUsize};
+use once_cell::sync::Lazy;
+
+pub static NODE_COUNT: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
+
+pub fn pick_move(board: &Board, depth: i32, bot_colour: &Colour) -> (Option<Move>, i32) {
+    
+    let legal_moves = get_legal_moves(board);
+
+    let mut best_mv: Option<Move> = None;
+    let mut best_mv_evaluation: i32 = i32::MIN;
+    
+    for mv in legal_moves {
+        let mut current_board = board.clone();
+        current_board.play_unsafe(mv);
+        let eval = minmax(&current_board, depth - 1, false, i32::MIN, i32::MAX, bot_colour);
+        if eval > best_mv_evaluation {
+            best_mv = Some(mv);
+            best_mv_evaluation = eval;
+        }
+    }
+
+    return (best_mv, best_mv_evaluation);
+}
 
 pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32, mut beta: i32, bot_colour: &Colour) -> i32 {
     
@@ -17,16 +40,14 @@ pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: 
             return i32::MIN;
         }
         
-        // Null move pruning
-        /*
         if depth >= 2 && !current_board.is_check(bot_colour) {
-            let null_move_board = make_null_move(current_board.clone());
-            let eval = minmax( null_move_board, depth - 2, false, alpha, beta, bot_colour);
+            let mut null_move_board: Board = current_board.clone();
+            null_move_board.swap_turn();
+            let eval = minmax( &null_move_board, depth - 2, false, alpha, beta, bot_colour);
             if eval >= beta {
                 return beta;
             }
         }
-        */
         
         let mut max_eval = i32::MIN;
         for mv in get_legal_moves(&current_board) {

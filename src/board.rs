@@ -23,7 +23,7 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new() -> Board {
+    pub fn starting_position() -> Board {
         Board {
             role: ByRole {
                 pawn: Bitboard(0x00ff_0000_0000_ff00),
@@ -49,6 +49,38 @@ impl Board {
                     ByCastleSide { 
                         kingside: true,
                         queenside: true,
+                    }
+            },
+            last_move: None,
+        }
+    }
+
+    pub fn empty_board() -> Board {
+        Board {
+            role: ByRole {
+                pawn: Bitboard(0),
+                knight: Bitboard(0),
+                bishop: Bitboard(0),
+                rook: Bitboard(0),
+                queen: Bitboard(0),
+                king: Bitboard(0),
+            },
+            colour: ByColour {
+                black: Bitboard(0),
+                white: Bitboard(0),
+            },
+            occupied: Bitboard(0),
+            turn: Colour::White,
+            castling_rights: ByColour {
+                black:
+                    ByCastleSide { 
+                        kingside: false,
+                        queenside: false
+                    },
+                white:
+                    ByCastleSide { 
+                        kingside: false,
+                        queenside: false,
                     }
             },
             last_move: None,
@@ -236,20 +268,6 @@ impl Board {
                 if (self.occupied & set_bit).count_ones() != 0 {
                     if (self.colour.white & set_bit).count_ones() != 0 {
                         if (self.role.king & set_bit).count_ones() != 0 {
-                            rank.push('k');
-                        } else if (self.role.queen & set_bit).count_ones() != 0 {
-                            rank.push('q');
-                        } else if (self.role.rook & set_bit).count_ones() != 0 {
-                            rank.push('r');
-                        } else if (self.role.bishop & set_bit).count_ones() != 0 {
-                            rank.push('b');
-                        } else if (self.role.knight & set_bit).count_ones() != 0 {
-                            rank.push('n');
-                        } else {
-                            rank.push('p');
-                        }
-                    } else {
-                        if (self.role.king & set_bit).count_ones() != 0 {
                             rank.push('K');
                         } else if (self.role.queen & set_bit).count_ones() != 0 {
                             rank.push('Q');
@@ -261,6 +279,20 @@ impl Board {
                             rank.push('N');
                         } else {
                             rank.push('P');
+                        }
+                    } else {
+                        if (self.role.king & set_bit).count_ones() != 0 {
+                            rank.push('k');
+                        } else if (self.role.queen & set_bit).count_ones() != 0 {
+                            rank.push('q');
+                        } else if (self.role.rook & set_bit).count_ones() != 0 {
+                            rank.push('r');
+                        } else if (self.role.bishop & set_bit).count_ones() != 0 {
+                            rank.push('b');
+                        } else if (self.role.knight & set_bit).count_ones() != 0 {
+                            rank.push('n');
+                        } else {
+                            rank.push('p');
                         }
                     }
                 } else {

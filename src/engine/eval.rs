@@ -1,8 +1,14 @@
-use crate::board::Board;
+use crate::movegen::{get_knight_attacks};
+use crate::{board::Board};
 use crate::colour::Colour;
+use crate::engine::search::NODE_COUNT;
+use std::sync::atomic::{Ordering};
 
+// Provides a positive i32 if the colour provided is doing better than the other colour, and a negative value if the colour is doing worse
 pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     
+    NODE_COUNT.fetch_add(1, Ordering::Relaxed);
+
     let white_pawns = board.role.pawn & board.colour.white;
     let white_knights = board.role.knight & board.colour.white;
     let white_bishops = board.role.bishop & board.colour.white;
@@ -17,17 +23,11 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     
     let mut evaluation: i32 = 0;
     
-    evaluation += white_pawns.count_ones() as i32;
-    evaluation += white_knights.count_ones() as i32 * 3;
-    evaluation += white_bishops.count_ones() as i32 * 3;
-    evaluation += white_rooks.count_ones() as i32 * 5;
-    evaluation += white_queens.count_ones() as i32 * 9;
-    
-    evaluation -= black_pawns.count_ones() as i32;
-    evaluation -= black_knights.count_ones() as i32 * 3;
-    evaluation -= black_bishops.count_ones() as i32 * 3;
-    evaluation -= black_rooks.count_ones() as i32 * 5;
-    evaluation -= black_queens.count_ones() as i32 * 9;
+    evaluation += (white_pawns.count_ones() - black_pawns.count_ones()) as i32 * 1000;
+    evaluation += (white_knights.count_ones() - black_knights.count_ones()) as i32 * 3050;
+    evaluation += (white_bishops.count_ones() - black_bishops.count_ones()) as i32 * 3330;
+    evaluation += (white_rooks.count_ones() - black_rooks.count_ones()) as i32 * 5630;
+    evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * 9500;
     
     match colour {
         Colour::White => return evaluation,

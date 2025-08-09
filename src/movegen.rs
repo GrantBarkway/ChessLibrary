@@ -139,7 +139,6 @@ pub fn get_black_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     let king_bitboard: Bitboard = board.colour.black & board.role.king;
     let turn_colour: Bitboard = board.colour.black;
     
-    
     let black_king_attacks = get_black_king_attacks(board);
     for single_move in black_king_attacks.get_component_bitboards() {
         if (single_move & turn_colour).count_ones() == 0 {
