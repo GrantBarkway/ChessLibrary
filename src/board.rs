@@ -2,7 +2,7 @@ use crate::mv::Move;
 use crate::role::{Role, ByRole};
 use crate::colour::{Colour, ByColour};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
-use crate::movegen::{get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_legal_moves, get_queen_attacks, get_rook_attacks, get_white_pawn_attacks};
+use crate::movegen::{get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_legal_moves, get_queen_attacks, get_rook_attacks, get_white_pawn_attacks, get_king_attacks};
 use crate::castle::{ByCastleSide};
 use crate::square::Square;
 
@@ -19,7 +19,7 @@ pub struct Board {
     pub occupied: Bitboard,
     pub turn: Colour,
     pub castling_rights: ByColour<ByCastleSide<bool>>,
-    pub last_move: Option<Move>,
+    pub en_passant_target_square: Bitboard,
 }
 
 impl Board {
@@ -51,7 +51,7 @@ impl Board {
                         queenside: true,
                     }
             },
-            last_move: None,
+            en_passant_target_square: EMPTY_BITBOARD,
         }
     }
 
@@ -83,7 +83,7 @@ impl Board {
                         queenside: false,
                     }
             },
-            last_move: None,
+            en_passant_target_square: EMPTY_BITBOARD,
         }
     }
     
@@ -106,7 +106,7 @@ impl Board {
             
             self.swap_turn();
             
-            self.last_move = Some(mv);
+            self.en_passant_target_square = mv.en_passant_target;
         } else {
             panic!("Not a legal move!")
         }
@@ -128,7 +128,7 @@ impl Board {
         
         self.swap_turn();
 
-        self.last_move = Some(mv);
+        self.en_passant_target_square = mv.en_passant_target;
     }
     
     pub fn play_normal(&mut self, mv: Move) {
@@ -201,7 +201,7 @@ impl Board {
     pub fn is_check(&self, colour_to_check: &Colour) -> bool {
         let king_square: Bitboard;
         match colour_to_check {
-
+            
             Colour::White => {
                 king_square = self.colour.white & self.role.king;
                 
@@ -215,6 +215,8 @@ impl Board {
                 } else if get_rook_attacks(self, &king_square) & (self.colour.black & self.role.rook) != EMPTY_BITBOARD {
                     return true;
                 } else if get_queen_attacks(self, &king_square) & (self.colour.black & self.role.queen) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_king_attacks(self, &king_square) & (self.colour.black & self.role.king) != EMPTY_BITBOARD {
                     return true;
                 } else {
                     return false;
@@ -234,6 +236,8 @@ impl Board {
                 } else if get_rook_attacks(self, &king_square) & (self.colour.white & self.role.rook) != EMPTY_BITBOARD {
                     return true;
                 } else if get_queen_attacks(self, &king_square) & (self.colour.white & self.role.queen) != EMPTY_BITBOARD {
+                    return true;
+                } else if get_king_attacks(self, &king_square) & (self.colour.white & self.role.king) != EMPTY_BITBOARD {
                     return true;
                 } else {
                     return false;

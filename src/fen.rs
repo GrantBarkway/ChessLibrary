@@ -1,16 +1,17 @@
-use std::ops::Shr;
-
 use crate::board::Board;
-use crate::bitboard::Bitboard;
+use crate::bitboard::{Bitboard, string_move_to_bitboard};
 use crate::colour::Colour;
 use crate::role::Role;
 
 impl Board {
+
+    // Not very efficient, just need primitive for testing
     pub fn from_fen(fen: String) -> Board {
         let mut board = Board::empty_board();
-        let mut mask: u64 = 0b1000000000000000000000000000000000000000000000000000000000000000;
+        let mut mask: u64 = 0b1000000000000000000000000000000000000000000000000000000000000000; 
+        let fen_vec: Vec<&str> = fen.split_whitespace().collect();
         while mask != 0 {
-            for char in fen.chars() {
+            for char in fen_vec[0].chars() {
                 if char == 'r' {
                     board.set_square(&Bitboard(mask), &Some(Role::Rook), &Some(Colour::Black));
                     mask = mask >> 1;
@@ -54,6 +55,31 @@ impl Board {
                 }
             }
         }
+        
+        for char in fen_vec[1].chars() {
+            if char == 'w' {
+                board.turn = Colour::White;
+            } else {
+                board.turn = Colour::Black;
+            }
+        }
+
+        for char in fen_vec[2].chars() {
+            if char == 'K' {
+                board.castling_rights.white.kingside = true;
+            } else if char == 'Q' {
+                board.castling_rights.white.queenside = true;
+            } else if char == 'k' {
+                board.castling_rights.black.kingside = true;
+            } else if char == 'Q' {
+                board.castling_rights.black.queenside = true;
+            }
+        }
+
+        board.en_passant_target_square = string_move_to_bitboard(fen_vec[3]);
+        
+        // Ignoring half move and full moves for now
+
         return board;
     }
 }

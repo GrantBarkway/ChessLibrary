@@ -120,6 +120,50 @@ pub fn bitboard_to_string_move(sq: Bitboard) -> String {
     return move_as_string;
 }
 
+// Not efficient, just for debugging/fen parsing
+pub fn string_move_to_bitboard(mv: &str) -> Bitboard {
+    let mut rank: Bitboard = FIRST_RANK;
+    let mut file: Bitboard = FILE_A;
+    for char in mv.chars() {
+        if char == 'a' {
+            file = FILE_A;
+        } else if char == 'b' {
+            file = FILE_B;
+        } else if char == 'c' {
+            file = FILE_C;
+        } else if char == 'd' {
+            file = FILE_D;
+        } else if char == 'e' {
+            file = FILE_E;
+        } else if char == 'f' {
+            file = FILE_F;
+        } else if char == 'g' {
+            file = FILE_G;
+        } else if char == 'h' {
+            file = FILE_H;
+        } else if char == '1' {
+            rank = FIRST_RANK
+        } else if char == '2' {
+            rank = SECOND_RANK
+        } else if char == '3' {
+            rank = THIRD_RANK
+        } else if char == '4' {
+            rank = FOURTH_RANK
+        } else if char == '5' {
+            rank = FIFTH_RANK
+        } else if char == '6' {
+            rank = SIXTH_RANK
+        } else if char == '7' {
+            rank = SEVENTH_RANK
+        } else if char == '8' {
+            rank = EIGHTH_RANK
+        } else {
+            return EMPTY_BITBOARD;
+        }
+    }
+    return rank & file;
+}
+
 impl fmt::Display for Bitboard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)

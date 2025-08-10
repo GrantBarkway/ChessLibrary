@@ -1,4 +1,3 @@
-use crate::movegen::{get_knight_attacks};
 use crate::{board::Board};
 use crate::colour::Colour;
 use crate::engine::search::NODE_COUNT;
