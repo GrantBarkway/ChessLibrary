@@ -1,4 +1,4 @@
-use crate::mv::Move;
+use crate::mv::{Move, EMPTY_MOVE};
 use crate::role::{Role, ByRole};
 use crate::colour::{Colour, ByColour};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
@@ -20,6 +20,7 @@ pub struct Board {
     pub turn: Colour,
     pub castling_rights: ByColour<ByCastleSide<bool>>,
     pub en_passant_target_square: Bitboard,
+    pub last_move: Move,
 }
 
 impl Board {
@@ -52,6 +53,7 @@ impl Board {
                     }
             },
             en_passant_target_square: EMPTY_BITBOARD,
+            last_move: EMPTY_MOVE,
         }
     }
 
@@ -84,6 +86,7 @@ impl Board {
                     }
             },
             en_passant_target_square: EMPTY_BITBOARD,
+            last_move: EMPTY_MOVE,
         }
     }
     
@@ -107,6 +110,8 @@ impl Board {
             self.swap_turn();
             
             self.en_passant_target_square = mv.en_passant_target;
+
+            self.last_move = mv;
         } else {
             panic!("Not a legal move!")
         }
@@ -129,12 +134,31 @@ impl Board {
         self.swap_turn();
 
         self.en_passant_target_square = mv.en_passant_target;
+
+        self.last_move = mv;
     }
     
     pub fn play_normal(&mut self, mv: Move) {
         self.clear_square(&mv.to_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
         self.clear_square(&mv.from_square);
+    }
+    
+    pub fn unplay(&mut self, mv: Move) {
+        self.clear_square(&mv.to_square);
+        self.clear_square(&mv.from_square);
+        match mv.colour {
+            Some(Colour::White)  => {
+                self.set_square(&mv.from_square, &mv.role, &Some(Colour::White));
+                self.set_square(&mv.to_square, &mv.capture_piece, &Some(Colour::Black));
+            }
+
+            Some(Colour::Black) => {
+                self.set_square(&mv.from_square, &mv.role, &Some(Colour::Black));
+                self.set_square(&mv.to_square, &mv.capture_piece, &Some(Colour::White));
+            }
+            None => ()
+        }
     }
     
     pub fn play_castle(&mut self, mv: Move) {

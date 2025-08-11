@@ -1,3 +1,4 @@
+use chesslibrary::bitboard::EMPTY_BITBOARD;
 use chesslibrary::board::Board;
 use chesslibrary::engine::search::{NODE_COUNT};
 //use chesslibrary::engine::eval::evaluate;
@@ -5,6 +6,8 @@ use chesslibrary::engine::search::{NODE_COUNT};
 //use chesslibrary::bitboard::{bitboard_to_string_move};
 //use chesslibrary::colour::{Colour};
 use chesslibrary::perft::perft_test;
+use chesslibrary::square::Square;
+use chesslibrary::mv::Move;
 
 fn main() {
     use std::time::Instant;
@@ -17,9 +20,12 @@ fn main() {
         }
     }*/
     
-    let board = Board::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -".to_string());
+    let mut board = Board::starting_position();
     
-    board.display_board();
+    //board.play_unsafe(Move::new(&board, &Square::E2, &Square::E4, &EMPTY_BITBOARD, false, false, None));
+    //board.unplay(board.last_move);
+
+    //board.display_board();
     
     /*
     // Gets best move with evaluation
@@ -34,13 +40,13 @@ fn main() {
     }
     */
 
-    eprintln!("Boards evaluated: {:?}", perft_test(&board, 3));
+    eprintln!("Boards evaluated: {:?}", perft_test(&mut board, 7));
     
     let elapsed = now.elapsed();
     
     let boards_per_second = NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed) * 1000000 / elapsed.as_micros() as usize;
     
     println!("Elapsed: {:.2?}", elapsed);
-    println!("Nodes evaluated per second: {:.2?}", boards_per_second);
-    println!("Nodes evaluated: {:?}", NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed));
+    //println!("Nodes evaluated per second: {:.2?}", boards_per_second);
+    //println!("Nodes evaluated: {:?}", NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed));
 }

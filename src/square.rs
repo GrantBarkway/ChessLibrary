@@ -160,14 +160,14 @@ impl Board {
                 Role::Queen => self.role.queen |= square,
                 Role::King => self.role.king |= square
             };
-        }
+            
+            self.occupied.0 |= square.0;
         
-        self.occupied.0 |= square.0;
-        
-        if let Some(colour) = colour {
-            match colour {
-                Colour::White => self.colour.white |= square,
-                Colour::Black => self.colour.black |= square,
+            if let Some(colour) = colour {
+                match colour {
+                    Colour::White => self.colour.white |= square,
+                    Colour::Black => self.colour.black |= square,
+                }
             }
         }
     }
