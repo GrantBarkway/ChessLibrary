@@ -21,6 +21,8 @@ const KNIGHT_ATTACKS: [Bitboard; 64] = [
     Bitboard(0x0004020000000000), Bitboard(0x0008050000000000), Bitboard(0x00110a0000000000), Bitboard(0x0022140000000000), Bitboard(0x0044280000000000), Bitboard(0x0088500000000000), Bitboard(0x0010a00000000000), Bitboard(0x0020400000000000)
 ];
 
+const KING_ATTACKS: [Bitboard; 64] = bootstrap_king_attacks();
+
 // Pawn shifts for different attacks 
 const PAWN_FORWARD_SHIFT: i32 = 8;
 const WHITE_PAWN_A_FILE_ATTACK: i32 = 7;
@@ -138,21 +140,35 @@ pub fn get_black_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     }
 }
 
-// Accepts and mutates a Bitboard with all of blacks king attacks
+// Returns a Bitboard with all of a specified colours king attacks
 pub fn get_king_attacks(_board: &Board, king_bitboard: &Bitboard) -> Bitboard {
-    let mut move_bitboard = Bitboard(0);
-    
-    move_bitboard |= (king_bitboard & !FILE_A) << 1;
-    move_bitboard |= (king_bitboard & !FILE_H) >> 1;
-    move_bitboard |= (king_bitboard & !FIRST_RANK) >> 8;
-    move_bitboard |= (king_bitboard & !EIGHTH_RANK) << 8;
-    
-    move_bitboard |= (king_bitboard & !(FILE_A|FIRST_RANK)) >> 7;
-    move_bitboard |= (king_bitboard & !(FILE_A|EIGHTH_RANK)) << 9;
-    move_bitboard |= (king_bitboard & !(FILE_H|FIRST_RANK)) >> 9;
-    move_bitboard |= (king_bitboard & !(FILE_H|EIGHTH_RANK)) << 7;
+    return KING_ATTACKS[king_bitboard.0.trailing_zeros() as usize];
+}
 
-    return move_bitboard;
+const fn bootstrap_king_attacks() -> [Bitboard; 64] {
+    let mut table = [Bitboard(0); 64];
+    let mut square = 0;
+    let mut king_position = 1;
+    
+    while square < 64 {
+        let mut move_bitboard = 0;
+        move_bitboard |= (king_position & !FILE_A.0) << 1;
+        move_bitboard |= (king_position & !FILE_H.0) >> 1;
+        move_bitboard |= (king_position & !FIRST_RANK.0) >> 8;
+        move_bitboard |= (king_position & !EIGHTH_RANK.0) << 8;
+        
+        move_bitboard |= (king_position & !(FILE_A.0|FIRST_RANK.0)) >> 7;
+        move_bitboard |= (king_position & !(FILE_A.0|EIGHTH_RANK.0)) << 9;
+        move_bitboard |= (king_position & !(FILE_H.0|FIRST_RANK.0)) >> 9;
+        move_bitboard |= (king_position & !(FILE_H.0|EIGHTH_RANK.0)) << 7;
+        
+        table[square] = Bitboard(move_bitboard);
+
+        king_position = king_position << 1;
+        square += 1;
+    }
+    
+    return table;
 }
 
 // Accepts and mutates an ArrayVec with all of whites legal pawn moves

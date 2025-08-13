@@ -22,11 +22,12 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     
     let mut evaluation: i32 = 0;
     
+    // Material evaluation
     evaluation += (white_pawns.count_ones() - black_pawns.count_ones()) as i32 * 1000;
     evaluation += (white_knights.count_ones() - black_knights.count_ones()) as i32 * 3050;
     evaluation += (white_bishops.count_ones() - black_bishops.count_ones()) as i32 * 3330;
     evaluation += (white_rooks.count_ones() - black_rooks.count_ones()) as i32 * 5630;
-    evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * 9500;
+    evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * 9500; 
     
     match colour {
         Colour::White => return evaluation,

@@ -21,6 +21,7 @@ pub struct Board {
     pub castling_rights: ByColour<ByCastleSide<bool>>,
     pub en_passant_target_square: Bitboard,
     pub last_move: Move,
+    pub half_move_count: i32,
 }
 
 impl Board {
@@ -54,6 +55,7 @@ impl Board {
             },
             en_passant_target_square: EMPTY_BITBOARD,
             last_move: EMPTY_MOVE,
+            half_move_count: 0,
         }
     }
 
@@ -87,6 +89,7 @@ impl Board {
             },
             en_passant_target_square: EMPTY_BITBOARD,
             last_move: EMPTY_MOVE,
+            half_move_count: 0,
         }
     }
     
@@ -112,6 +115,8 @@ impl Board {
             self.en_passant_target_square = mv.en_passant_target;
 
             self.last_move = mv;
+
+            self.half_move_count += 1;
         } else {
             panic!("Not a legal move!")
         }
@@ -136,6 +141,8 @@ impl Board {
         self.en_passant_target_square = mv.en_passant_target;
 
         self.last_move = mv;
+
+        self.half_move_count += 1;
     }
     
     pub fn play_normal(&mut self, mv: Move) {
