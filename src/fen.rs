@@ -71,7 +71,7 @@ impl Board {
                 board.castling_rights.white.queenside = true;
             } else if char == 'k' {
                 board.castling_rights.black.kingside = true;
-            } else if char == 'Q' {
+            } else if char == 'q' {
                 board.castling_rights.black.queenside = true;
             }
         }

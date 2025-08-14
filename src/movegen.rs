@@ -136,7 +136,7 @@ pub fn get_black_king_moves(board: &Board, move_vector: &mut ArrayVec<Move, 218>
     }
     
     if (board.castling_rights.black.queenside == true) & (((BLACK_QUEENSIDE_CASTLE_UNOCCUPIED_SQUARES & board.occupied) == EMPTY_BITBOARD) & ((BLACK_QUEENSIDE_CASTLE_CHECK_SQUARES & white_attack_bitboard) == EMPTY_BITBOARD)) {
-        move_vector.push(Move::new(&board, &king_bitboard, &Square::C1, &EMPTY_BITBOARD, false, true, None))
+        move_vector.push(Move::new(&board, &king_bitboard, &Square::C8, &EMPTY_BITBOARD, false, true, None))
     }
 }
 
