@@ -105,7 +105,7 @@ def accept_challenge(challenge):
 ## Gets the best move
 def get_best_move(bot_colour, bot_time):
     game_fen = board.fen()
-    best_move = chesslibrary.pick_move(game_fen, bot_colour);
+    best_move = chesslibrary.pick_move(game_fen, 3, bot_colour)
     return best_move[0]
 
 ## Determines if it's the bots turn

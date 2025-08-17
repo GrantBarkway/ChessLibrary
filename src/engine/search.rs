@@ -14,12 +14,12 @@ use pyo3::wrap_pyfunction;
 pub static NODE_COUNT: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
 
 #[pyfunction]
-pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> (String, i32) {
+pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> PyResult<(String, i32)> {
     
     let bot_colour = match bot_colour.as_str() {
         "white" => Colour::White,
         "black" => Colour::Black,
-        _ => return ("Invalid colour.".to_string(), 0),
+        _ => return Ok(("Invalid colour.".to_string(), 0)),
     };
     
     let board = Board::from_fen(board_fen);
@@ -39,7 +39,7 @@ pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> (String, 
         }
     }
     
-    return (to_uci(best_mv), best_mv_evaluation);
+    return Ok((to_uci(best_mv), best_mv_evaluation));
 }
 
 pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32, mut beta: i32, bot_colour: &Colour) -> i32 {
@@ -138,7 +138,7 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
 
 // Python module definition
 #[pymodule]
-fn chesslibrary(_py: Python, m: &PyModule) -> PyResult<()> {
+fn chesslibrary(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pick_move, m)?)?;
     Ok(())
 }
