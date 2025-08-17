@@ -1,5 +1,4 @@
-use crate::{board::Board, movegen::get_legal_moves, mv};
-use crate::bitboard::bitboard_to_string_move;
+use crate::{board::Board, movegen::get_legal_moves};
 
 pub fn perft_test(board: &Board, depth: i32) -> i64 {
     return perft_recursive(board, depth, 0);

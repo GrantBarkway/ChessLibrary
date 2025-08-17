@@ -3,30 +3,43 @@ use crate::board::{Board};
 use crate::movegen::get_legal_moves;
 use crate::engine::eval::evaluate;
 use crate::mv::Move;
+use crate::uci::to_uci;
 use std::cmp;
 use std::sync::atomic::{AtomicUsize};
 use once_cell::sync::Lazy;
 
+use pyo3::prelude::*;
+use pyo3::wrap_pyfunction;
+
 pub static NODE_COUNT: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
 
-pub fn pick_move(board: &Board, depth: i32, bot_colour: &Colour) -> (Option<Move>, i32) {
+#[pyfunction]
+pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> (String, i32) {
     
-    let legal_moves = get_legal_moves(board);
-
+    let bot_colour = match bot_colour.as_str() {
+        "white" => Colour::White,
+        "black" => Colour::Black,
+        _ => return ("Invalid colour.".to_string(), 0),
+    };
+    
+    let board = Board::from_fen(board_fen);
+    
+    let legal_moves = get_legal_moves(&board);
+    
     let mut best_mv: Option<Move> = None;
     let mut best_mv_evaluation: i32 = i32::MIN;
     
     for mv in legal_moves {
         let mut current_board = board.clone();
         current_board.play_unsafe(mv);
-        let eval = minmax(&current_board, depth - 1, false, i32::MIN, i32::MAX, bot_colour);
+        let eval = minmax(&current_board, depth - 1, false, i32::MIN, i32::MAX, &bot_colour);
         if eval > best_mv_evaluation {
             best_mv = Some(mv);
             best_mv_evaluation = eval;
         }
     }
-
-    return (best_mv, best_mv_evaluation);
+    
+    return (to_uci(best_mv), best_mv_evaluation);
 }
 
 pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32, mut beta: i32, bot_colour: &Colour) -> i32 {
@@ -121,4 +134,11 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
         }
         return best_value;
     }
+}
+
+// Python module definition
+#[pymodule]
+fn chesslibrary(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(pick_move, m)?)?;
+    Ok(())
 }

@@ -139,7 +139,7 @@ impl Board {
         self.swap_turn();
 
         self.en_passant_target_square = mv.en_passant_target;
-
+        
         self.last_move = mv;
 
         self.half_move_count += 1;

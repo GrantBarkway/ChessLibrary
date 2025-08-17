@@ -10,3 +10,4 @@ pub mod castle;
 pub mod engine;
 pub mod fen;
 pub mod perft;
+pub mod uci;
