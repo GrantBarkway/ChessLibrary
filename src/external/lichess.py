@@ -4,10 +4,11 @@ import math
 import random
 import time
 import datetime
-import os
-from engine import chesslibrary ## Rust functions
+import chesslibrary ## Rust functions
 
-session = berserk.TokenSession(os.environ['LICHESS_API_KEY'])
+import os
+
+session = berserk.TokenSession(os.getenv("LICHESS_API_KEY"))
 client = berserk.Client(session)
 
 board = chess.Board()
@@ -16,7 +17,7 @@ board = chess.Board()
 
 ## Makes the move on the lichess board. Handles disconnections
 def make_move_on_board(game_id, move, max_retries):
-
+    
     for attempt in range(max_retries):
 
         try:
