@@ -33,7 +33,7 @@ def make_move_on_board(game_id, move, max_retries):
 
 ## Accepts challenge and runs the logic for accepting input from the lichess board
 def play():
-
+    
     game_in_progress = False
     for challenge in client.bots.stream_incoming_events():
 
@@ -70,7 +70,7 @@ def play():
                                 bot_colour = get_bot_colour(event)
                                 if bot_colour == 'white':
                                     next_move = random.choice(["e2e4","d2d4","g1f3"])
-                                    make_move_on_board(game_id, next_move,3)
+                                    make_move_on_board(game_id, next_move, 3)
 
                             ## Handles bot moves
                             elif event['type'] == 'gameState':
@@ -84,12 +84,12 @@ def play():
                                     if len(move_list) > 1:
                                         bot_time = get_time(bot_colour, event)
                                         next_move = get_best_move(bot_colour, bot_time)
-                                        make_move_on_board(game_id, next_move,3)
+                                        make_move_on_board(game_id, next_move, 3)
 
                                     ## Make first move as black quickly so opponent doesn't abandon
                                     else:
                                         next_move = get_best_move(bot_colour, 0)
-                                        make_move_on_board(game_id, next_move,3)
+                                        make_move_on_board(game_id, next_move, 3)
 
 
 ## Determines if a challenge should be accepted or declined based on time control and variant. Returns a boolean
@@ -106,7 +106,7 @@ def accept_challenge(challenge):
 ## Gets the best move
 def get_best_move(bot_colour, bot_time):
     game_fen = board.fen()
-    best_move = chesslibrary.pick_move(game_fen, 3, bot_colour)
+    best_move = chesslibrary.pick_move(game_fen, 4, bot_colour)
     return best_move[0]
 
 ## Determines if it's the bots turn

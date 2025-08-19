@@ -5,7 +5,7 @@ use crate::engine::eval::evaluate;
 use crate::mv::Move;
 use crate::uci::to_uci;
 use std::cmp;
-use std::sync::atomic::{AtomicUsize};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use once_cell::sync::Lazy;
 
 use pyo3::prelude::*;
@@ -15,7 +15,10 @@ pub static NODE_COUNT: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
 
 #[pyfunction]
 pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> PyResult<(String, i32)> {
-    
+
+    use std::time::Instant;
+    let now = Instant::now();
+
     let bot_colour = match bot_colour.as_str() {
         "white" => Colour::White,
         "black" => Colour::Black,
@@ -39,11 +42,13 @@ pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> PyResult<
         }
     }
     
+    eprintln!("Nodes searched: {} in {:?}", NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed), now.elapsed());
+
     return Ok((to_uci(best_mv), best_mv_evaluation));
 }
 
 pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32, mut beta: i32, bot_colour: &Colour) -> i32 {
-    
+
     if depth == 0 {
         return quiesce(current_board, bot_colour, is_bots_move, alpha, beta);
     }
@@ -100,7 +105,7 @@ pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: 
 fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut alpha: i32, mut beta: i32) -> i32 {
     let stand_pat = evaluate(current_board, bot_colour);
     let mut best_value = stand_pat;
-    
+
     if is_bots_move {
         if best_value >= beta {
             return best_value;

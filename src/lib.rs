@@ -11,3 +11,5 @@ pub mod engine;
 pub mod fen;
 pub mod perft;
 pub mod uci;
+
+// maturin develop --features "extension-module" --release

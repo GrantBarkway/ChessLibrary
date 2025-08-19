@@ -2,7 +2,7 @@
 
 use chesslibrary::bitboard::EMPTY_BITBOARD;
 use chesslibrary::board::Board;
-use chesslibrary::engine::search::{NODE_COUNT};
+use chesslibrary::engine::search::{pick_move, NODE_COUNT};
 //use chesslibrary::engine::eval::evaluate;
 use chesslibrary::movegen::{get_legal_moves};
 use chesslibrary::bitboard::{Bitboard, bitboard_to_string_move};
@@ -17,22 +17,9 @@ fn main() {
     use std::time::Instant;
     let now = Instant::now();
     
-    /*
-    for i in 0..10 {
-        if let Some(legal_moves) = get_legal_moves(&board).get(i) {
-            board.play_unsafe(*legal_moves)
-        }
-    }*/
-    
     let board = Board::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string());
     
-    let mv = Move::new(&board, &Square::E2, &Square::E5, &Square::E4, true, true, Some(Role::King));
-    
-    for _i in 0..100000 {
-        Board::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string());
-    }
-    
-    eprintln!("{:?}", to_uci(Some(mv)));
+    eprintln!("Best move: {:?}", pick_move("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string(), 3, "white".to_string()));
 
     //board.play_unsafe(Move::new(&board, &Square::E2, &Square::E4, &EMPTY_BITBOARD, false, false, None));
     //board.unplay(board.last_move);

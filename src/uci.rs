@@ -31,21 +31,21 @@ pub fn get_square_string(sq: Bitboard) -> String {
     let mut square_string: String = "".to_string();
 
     if sq & FILE_A != EMPTY_BITBOARD {
-        square_string.push_str("A");
+        square_string.push_str("a");
     } else if sq & FILE_B != EMPTY_BITBOARD {
-        square_string.push_str("B");
+        square_string.push_str("b");
     } else if sq & FILE_C != EMPTY_BITBOARD {
-        square_string.push_str("C");
+        square_string.push_str("c");
     } else if sq & FILE_D != EMPTY_BITBOARD {
-        square_string.push_str("D");
+        square_string.push_str("d");
     } else if sq & FILE_E != EMPTY_BITBOARD {
-        square_string.push_str("E");
+        square_string.push_str("e");
     } else if sq & FILE_F != EMPTY_BITBOARD {
-        square_string.push_str("F");
+        square_string.push_str("f");
     } else if sq & FILE_G != EMPTY_BITBOARD {
-        square_string.push_str("G");
+        square_string.push_str("g");
     } else if sq & FILE_H != EMPTY_BITBOARD {
-        square_string.push_str("H");
+        square_string.push_str("h");
     }
 
     if sq & FIRST_RANK != EMPTY_BITBOARD {

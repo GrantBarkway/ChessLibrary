@@ -3,6 +3,16 @@ use crate::colour::Colour;
 use crate::engine::search::NODE_COUNT;
 use std::sync::atomic::{Ordering};
 
+const KNIGHT_ATTACK_COUNT: [i8; 64] = 
+[2,3,4,4,4,4,3,2,
+ 3,4,6,6,6,6,4,3,
+ 4,6,8,8,8,8,6,4,
+ 4,6,8,8,8,8,6,4,
+ 4,6,8,8,8,8,6,4,
+ 4,6,8,8,8,8,6,4,
+ 3,4,6,6,6,6,4,3,
+ 2,3,4,4,4,4,3,2];
+
 // Provides a positive i32 if the colour provided is doing better than the other colour, and a negative value if the colour is doing worse
 pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     
@@ -27,7 +37,7 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     evaluation += (white_knights.count_ones() - black_knights.count_ones()) as i32 * 3050;
     evaluation += (white_bishops.count_ones() - black_bishops.count_ones()) as i32 * 3330;
     evaluation += (white_rooks.count_ones() - black_rooks.count_ones()) as i32 * 5630;
-    evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * 9500; 
+    evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * 9500;
     
     match colour {
         Colour::White => return evaluation,

@@ -12,14 +12,15 @@ impl Bitboard {
 
     // Splits a bitboard with multiple 1s into a vector of component bitboards containing only one 1 in it. Since there can
     // only be 10 pieces of each type maximum, the capacity is 10.
-    pub fn get_component_bitboards(&self) -> ArrayVec::<Bitboard,14> {
-        let mut bitboard_vector = ArrayVec::<Bitboard, 14>::new();
-        let mut bitboard_copy = self.clone().0 as i64;
-        let mut lowest_set_bit: i64;
+    pub fn get_component_bitboards(&self) -> ArrayVec::<Bitboard,18> {
+        let mut bitboard_vector = ArrayVec::<Bitboard, 18>::new();
+        let mut bitboard_copy = self.clone().0 as u64;
+        let mut lowest_set_bit: u64 = 1;
         while bitboard_copy != 0 {
-            lowest_set_bit = bitboard_copy & -bitboard_copy;
+            lowest_set_bit = lowest_set_bit << bitboard_copy.trailing_zeros();
             bitboard_vector.push(Bitboard(lowest_set_bit as u64));
             bitboard_copy = bitboard_copy - lowest_set_bit;
+            lowest_set_bit = 1;
         }
         return bitboard_vector;
     }
