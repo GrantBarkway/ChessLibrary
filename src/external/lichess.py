@@ -21,7 +21,7 @@ def make_move_on_board(game_id, move, max_retries):
     for attempt in range(max_retries):
 
         try:
-
+            
             client.bots.make_move(game_id, move)
             return
         

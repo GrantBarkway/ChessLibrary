@@ -12,12 +12,13 @@ use chesslibrary::role::Role;
 use chesslibrary::square::Square;
 use chesslibrary::mv::Move;
 use chesslibrary::uci::to_uci;
+use chesslibrary::square::{FILE_A,FILE_B,FILE_C,FILE_D,FILE_E,FILE_F,FILE_G,FILE_H};
 
 fn main() {
     use std::time::Instant;
     let now = Instant::now();
     
-    let board = Board::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string());
+    //let board = Board::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string());
     
     eprintln!("Best move: {:?}", pick_move("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string(), 3, "white".to_string()));
 
@@ -39,7 +40,7 @@ fn main() {
     eprintln!("Boards evaluated: {:?}", perft_test(&mut board, 5));
     */
     let elapsed = now.elapsed();
-
+    
     //let boards_per_second = NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed) * 1000000 / elapsed.as_micros() as usize;
     
     println!("Elapsed: {:.2?}", elapsed);

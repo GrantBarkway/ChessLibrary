@@ -5,8 +5,10 @@ use crate::engine::eval::evaluate;
 use crate::mv::Move;
 use crate::uci::to_uci;
 use std::cmp;
+use std::cmp::Reverse;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use once_cell::sync::Lazy;
+use arrayvec::ArrayVec;
 
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
@@ -15,10 +17,12 @@ pub static NODE_COUNT: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
 
 #[pyfunction]
 pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> PyResult<(String, i32)> {
+    
+    NODE_COUNT.store(0, Ordering::Relaxed);
 
     use std::time::Instant;
     let now = Instant::now();
-
+    
     let bot_colour = match bot_colour.as_str() {
         "white" => Colour::White,
         "black" => Colour::Black,
@@ -27,7 +31,7 @@ pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> PyResult<
     
     let board = Board::from_fen(board_fen);
     
-    let legal_moves = get_legal_moves(&board);
+    let legal_moves = alpha_beta_optimization(&board);
     
     let mut best_mv: Option<Move> = None;
     let mut best_mv_evaluation: i32 = i32::MIN;
@@ -47,7 +51,7 @@ pub fn pick_move(board_fen: String, depth: i32, bot_colour: String) -> PyResult<
     return Ok((to_uci(best_mv), best_mv_evaluation));
 }
 
-pub fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32, mut beta: i32, bot_colour: &Colour) -> i32 {
+fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32, mut beta: i32, bot_colour: &Colour) -> i32 {
 
     if depth == 0 {
         return quiesce(current_board, bot_colour, is_bots_move, alpha, beta);
@@ -139,6 +143,20 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
         }
         return best_value;
     }
+}
+
+fn alpha_beta_optimization(current_board: &Board) -> ArrayVec<Move, 218> {
+    let mut ordered_moves = ArrayVec::<(Move, i32), 218>::new();
+    
+    for mv in get_legal_moves(current_board) {
+        let mut move_board = current_board.clone();
+        move_board.play_unsafe(mv);
+        let eval = evaluate(current_board, &current_board.turn);
+        ordered_moves.push((mv, eval));
+    }
+    
+    ordered_moves.sort_by_key(|&(_,v)| Reverse(v));
+    return ordered_moves.into_iter().map(|(k,_)| k.clone()).collect();
 }
 
 // Python module definition
