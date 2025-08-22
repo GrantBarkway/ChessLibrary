@@ -1,6 +1,7 @@
 use crate::square::{NEIGHBOUR_FILES, FILE_D, FILE_E};
 use crate::{board::Board};
 use crate::colour::Colour;
+use crate::castle::CastleSide;
 use crate::engine::search::NODE_COUNT;
 use std::sync::atomic::{Ordering};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
@@ -15,7 +16,13 @@ const KNIGHT_ATTACK_COUNT: [i32; 64] =
  3,4,6,6,6,6,4,3,
  2,3,4,4,4,4,3,2];
 
-const E_D_FILE_CENTER_EIGHT: Bitboard = Bitboard(0b0000000000000000000110000001100000011000000110000000000000000000);
+//const E_D_FILE_CENTER_EIGHT: Bitboard = Bitboard(0b0000000000000000000110000001100000011000000110000000000000000000);
+
+const WHITE_KINGSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b10000011100000000);
+const WHITE_QUEENSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b100000001110000000000000);
+
+const BLACK_KINGSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b111000000010000000000000000000000000000000000000000);
+const BLACK_QUEENSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b11100000100000000000000000000000000000000000000000000000);
 
 // Provides a positive i32 if the colour provided is doing better than the other colour, and a negative value if the colour is doing worse
 pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
@@ -47,8 +54,46 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * 9500;
     
     match colour {
-        Colour::White => return evaluation,
-        Colour::Black => return -evaluation,
+        Colour::White => {
+            if board.white_castle_side == Some(CastleSide::KingSide) {
+                if (white_pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    evaluation += 50;
+                }
+            } else if board.white_castle_side == Some(CastleSide::QueenSide) {
+                if (white_pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    evaluation += 50;
+                }
+            } else {
+                if (white_pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    evaluation += 25;
+                }
+                if (white_pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    evaluation += 25;
+                }
+            }
+
+            return evaluation
+        },
+        Colour::Black => {
+            if board.black_castle_side == Some(CastleSide::KingSide) {
+                if (black_pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    evaluation += 50;
+                }
+            } else if board.black_castle_side == Some(CastleSide::QueenSide) {
+                if (black_pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    evaluation += 50;
+                }
+            } else {
+                if (black_pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    evaluation += 25;
+                }
+                if (black_pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    evaluation += 25;
+                }
+            }
+            
+            return -evaluation
+        },
     }
 }
 

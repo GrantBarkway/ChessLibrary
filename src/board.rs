@@ -3,7 +3,7 @@ use crate::role::{Role, ByRole};
 use crate::colour::{Colour, ByColour};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
 use crate::movegen::{get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_legal_moves, get_queen_attacks, get_rook_attacks, get_white_pawn_attacks, get_king_attacks};
-use crate::castle::{ByCastleSide};
+use crate::castle::{ByCastleSide, CastleSide};
 use crate::square::Square;
 
 
@@ -19,6 +19,8 @@ pub struct Board {
     pub occupied: Bitboard,
     pub turn: Colour,
     pub castling_rights: ByColour<ByCastleSide<bool>>,
+    pub white_castle_side: Option<CastleSide>,
+    pub black_castle_side: Option<CastleSide>,
     pub en_passant_target_square: Bitboard,
     pub last_move: Move,
     pub half_move_count: i32,
@@ -45,7 +47,7 @@ impl Board {
                 black:
                     ByCastleSide { 
                         kingside: true,
-                        queenside: true
+                        queenside: true,
                     },
                 white:
                     ByCastleSide { 
@@ -53,6 +55,8 @@ impl Board {
                         queenside: true,
                     }
             },
+            white_castle_side: None,
+            black_castle_side: None,
             en_passant_target_square: EMPTY_BITBOARD,
             last_move: EMPTY_MOVE,
             half_move_count: 0,
@@ -87,6 +91,8 @@ impl Board {
                         queenside: false,
                     }
             },
+            white_castle_side: None,
+            black_castle_side: None,
             en_passant_target_square: EMPTY_BITBOARD,
             last_move: EMPTY_MOVE,
             half_move_count: 0,
@@ -174,21 +180,25 @@ impl Board {
         match mv.to_square {
             // White kingside
             Square::G1 => {
+                self.white_castle_side = Some(CastleSide::KingSide);
                 self.clear_square(&Square::H1);
                 self.set_square(&Square::F1, &Some(Role::Rook), &mv.colour);
             }
             // White queenside
             Square::C1 => {
+                self.white_castle_side = Some(CastleSide::QueenSide);
                 self.clear_square(&Square::A1);
                 self.set_square(&Square::D1, &Some(Role::Rook), &mv.colour);
             }
             // Black kingside
             Square::G8 => {
+                self.black_castle_side = Some(CastleSide::KingSide);
                 self.clear_square(&Square::H8);
                 self.set_square(&Square::F8, &Some(Role::Rook), &mv.colour);
             }
             // Black queenside
             Square::C8 => {
+                self.black_castle_side = Some(CastleSide::QueenSide);
                 self.clear_square(&Square::A8);
                 self.set_square(&Square::D8, &Some(Role::Rook), &mv.colour);
             }

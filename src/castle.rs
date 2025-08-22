@@ -4,6 +4,7 @@ use crate::board::Board;
 use crate::colour::Colour;
 use crate::role::Role;
 
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum CastleSide {
     KingSide,
     QueenSide
