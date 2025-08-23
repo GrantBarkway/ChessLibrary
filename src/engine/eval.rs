@@ -16,13 +16,17 @@ const KNIGHT_ATTACK_COUNT: [i32; 64] =
  3,4,6,6,6,6,4,3,
  2,3,4,4,4,4,3,2];
 
-//const E_D_FILE_CENTER_EIGHT: Bitboard = Bitboard(0b0000000000000000000110000001100000011000000110000000000000000000);
-
+// Pawn structure bitboards
 const WHITE_KINGSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b10000011100000000);
 const WHITE_QUEENSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b100000001110000000000000);
-
 const BLACK_KINGSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b111000000010000000000000000000000000000000000000000);
 const BLACK_QUEENSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b11100000100000000000000000000000000000000000000000000000);
+
+const PAWN_MATERIAL_VALUE: i32 = 1000;
+const KNIGHT_MATERIAL_VALUE: i32 = 3050;
+const BISHOP_MATERIAL_VALUE: i32 = 3330;
+const ROOK_MATERIAL_VALUE: i32 = 5630;
+const QUEEN_MATERIAL_VALUE: i32 = 9500;
 
 // Provides a positive i32 if the colour provided is doing better than the other colour, and a negative value if the colour is doing worse
 pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
@@ -50,8 +54,8 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     
     evaluation += bishop_evaluation(&white_bishops) - bishop_evaluation(&black_bishops);
 
-    evaluation += (white_rooks.count_ones() - black_rooks.count_ones()) as i32 * 5630;
-    evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * 9500;
+    evaluation += (white_rooks.count_ones() - black_rooks.count_ones()) as i32 * ROOK_MATERIAL_VALUE;
+    evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * QUEEN_MATERIAL_VALUE;
     
     match colour {
         Colour::White => {
@@ -100,7 +104,7 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
 pub fn pawn_evaluation(pawns: &Bitboard) -> i32 {
     let mut pawn_evaluation: i32 = 0;
     
-    pawn_evaluation += pawns.count_ones() as i32 * 1000;
+    pawn_evaluation += pawns.count_ones() as i32 * PAWN_MATERIAL_VALUE;
     
     // Half a pawn penalty for doubled pawns and isolated pawns
     for (file, neighbours) in NEIGHBOUR_FILES {
@@ -121,7 +125,7 @@ pub fn pawn_evaluation(pawns: &Bitboard) -> i32 {
 pub fn knight_evaluation(knights: &Bitboard) -> i32 {
     let mut knight_evaluation: i32 = 0;
 
-    knight_evaluation += knights.count_ones() as i32 * 3050;
+    knight_evaluation += knights.count_ones() as i32 * KNIGHT_MATERIAL_VALUE;
 
     for knight in knights.get_component_bitboards() {
         knight_evaluation += KNIGHT_ATTACK_COUNT[knight.trailing_zeros() as usize] * 100
@@ -133,7 +137,7 @@ pub fn knight_evaluation(knights: &Bitboard) -> i32 {
 pub fn bishop_evaluation(bishops: &Bitboard) -> i32 {
     let mut bishop_evaluation: i32 = 0;
 
-    bishop_evaluation += bishops.count_ones() as i32 * 3330;
+    bishop_evaluation += bishops.count_ones() as i32 * BISHOP_MATERIAL_VALUE;
 
     if bishops.count_ones() > 1 {
         bishop_evaluation += 500;
