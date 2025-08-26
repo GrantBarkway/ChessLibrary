@@ -1,4 +1,4 @@
-use crate::square::{NEIGHBOUR_FILES, FILE_D, FILE_E};
+use crate::square::{NEIGHBOUR_FILES};
 use crate::{board::Board};
 use crate::colour::Colour;
 use crate::castle::CastleSide;
@@ -22,11 +22,13 @@ const WHITE_QUEENSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b10000000111000000000
 const BLACK_KINGSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b111000000010000000000000000000000000000000000000000);
 const BLACK_QUEENSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b11100000100000000000000000000000000000000000000000000000);
 
-const PAWN_MATERIAL_VALUE: i32 = 1000;
-const KNIGHT_MATERIAL_VALUE: i32 = 3050;
-const BISHOP_MATERIAL_VALUE: i32 = 3330;
-const ROOK_MATERIAL_VALUE: i32 = 5630;
-const QUEEN_MATERIAL_VALUE: i32 = 9500;
+const BISHOP_BONUS_AREA: Bitboard = Bitboard(0x7E7E7E7E7E7E00);
+
+const PAWN_MATERIAL_VALUE: i32 = 10000;
+const KNIGHT_MATERIAL_VALUE: i32 = 30500;
+const BISHOP_MATERIAL_VALUE: i32 = 33300;
+const ROOK_MATERIAL_VALUE: i32 = 56300;
+const QUEEN_MATERIAL_VALUE: i32 = 95000;
 
 // Provides a positive i32 if the colour provided is doing better than the other colour, and a negative value if the colour is doing worse
 pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
@@ -61,18 +63,18 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
         Colour::White => {
             if board.white_castle_side == Some(CastleSide::KingSide) {
                 if (white_pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 50;
+                    evaluation += 1000;
                 }
             } else if board.white_castle_side == Some(CastleSide::QueenSide) {
                 if (white_pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 50;
+                    evaluation += 1000;
                 }
             } else {
                 if (white_pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 25;
+                    evaluation += 500;
                 }
                 if (white_pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 25;
+                    evaluation += 500;
                 }
             }
 
@@ -81,18 +83,18 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
         Colour::Black => {
             if board.black_castle_side == Some(CastleSide::KingSide) {
                 if (black_pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 50;
+                    evaluation += 1000;
                 }
             } else if board.black_castle_side == Some(CastleSide::QueenSide) {
                 if (black_pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 50;
+                    evaluation += 1000;
                 }
             } else {
                 if (black_pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 25;
+                    evaluation += 500;
                 }
                 if (black_pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 25;
+                    evaluation += 500;
                 }
             }
             
@@ -109,11 +111,11 @@ pub fn pawn_evaluation(pawns: &Bitboard) -> i32 {
     // Half a pawn penalty for doubled pawns and isolated pawns
     for (file, neighbours) in NEIGHBOUR_FILES {
         match (file & pawns).count_ones() {
-            x if x > 1 => pawn_evaluation -= 500,
+            x if x > 1 => pawn_evaluation -= 1000,
             0 => (),
             _ => {
                 if (neighbours & pawns) == EMPTY_BITBOARD {
-                    pawn_evaluation -= 500;
+                    pawn_evaluation -= 1000;
                 }
             }
         }
@@ -128,7 +130,7 @@ pub fn knight_evaluation(knights: &Bitboard) -> i32 {
     knight_evaluation += knights.count_ones() as i32 * KNIGHT_MATERIAL_VALUE;
 
     for knight in knights.get_component_bitboards() {
-        knight_evaluation += KNIGHT_ATTACK_COUNT[knight.trailing_zeros() as usize] * 100
+        knight_evaluation += KNIGHT_ATTACK_COUNT[knight.trailing_zeros() as usize] * 500
     }
 
     return knight_evaluation;
@@ -140,8 +142,10 @@ pub fn bishop_evaluation(bishops: &Bitboard) -> i32 {
     bishop_evaluation += bishops.count_ones() as i32 * BISHOP_MATERIAL_VALUE;
 
     if bishops.count_ones() > 1 {
-        bishop_evaluation += 500;
+        bishop_evaluation += 1000;
     }
+
+    bishop_evaluation += (bishops & BISHOP_BONUS_AREA).count_ones() as i32 * 500;
 
     return bishop_evaluation;
 

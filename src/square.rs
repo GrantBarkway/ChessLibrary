@@ -127,7 +127,7 @@ impl Board {
     // Clears a specific square
     pub fn clear_square(&mut self, square: &Bitboard) {
         
-        let square_bitboard_clear_bit = !square.0;
+        let square_bitboard_clear_bit: u64 = !square.0;
         
         self.occupied &= square_bitboard_clear_bit;
         

@@ -231,10 +231,9 @@ impl Board {
     
     // Swaps the board turn
     pub fn swap_turn(&mut self) {
-        if self.turn == Colour::White {
-            self.turn = Colour::Black;
-        } else {
-            self.turn = Colour::White;
+        match self.turn {
+            Colour::White => self.turn = Colour::Black,
+            Colour::Black => self.turn = Colour::White,
         }
     }
     

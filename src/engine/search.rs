@@ -47,23 +47,36 @@ pub fn pick_move(board_fen: String, bot_time: u64, bot_colour: String) -> PyResu
         
         let mut move_evaluation: ArrayVec<(Move, i32), 218> = ArrayVec::<(Move, i32), 218>::new();
         for mv in ordered_legal_moves {
+
             let mut current_board = board.clone();
             current_board.play_unsafe(mv);
+
             let eval = minmax(&current_board, current_depth - 1, false, i32::MIN, i32::MAX, &bot_colour, start_time, max_time);
             if eval > local_best_mv_evaluation {
                 local_best_mv = Some(mv);
                 local_best_mv_evaluation = eval;
             }
+
             move_evaluation.push((mv, eval));
         }
         
         if (start_time.elapsed() < max_time) & (current_depth < 50) {
+
             overall_best_mv = local_best_mv;
             overall_best_mv_evaluation = local_best_mv_evaluation;
             
-            ordered_legal_moves = order_moves_by_evaluation(move_evaluation);
+            if overall_best_mv_evaluation == i32::MAX {
+                break;
+            }
+            
+            if current_depth >= 3 {
+                ordered_legal_moves = late_move_reduction(order_moves_by_evaluation(move_evaluation));
+            } else {
+                ordered_legal_moves = order_moves_by_evaluation(move_evaluation);
+            }
 
             current_depth += 1;
+
         } else {
             break
         }
@@ -91,8 +104,10 @@ fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32,
         }
         
         if depth >= 2 && !current_board.is_check(bot_colour) {
+
             let mut null_move_board: Board = current_board.clone();
             null_move_board.swap_turn();
+            
             let eval = minmax( &null_move_board, depth - 2, false, alpha, beta, bot_colour, start_time, max_time);
             if eval >= beta {
                 return beta;
@@ -100,11 +115,15 @@ fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32,
         }
         
         let mut max_eval = i32::MIN;
+
         for mv in get_legal_moves(&current_board) {
+
             let mut new_board = current_board.clone();
             new_board.play_unsafe(mv);
+
             let eval = minmax(&new_board, depth - 1, false, alpha, beta, bot_colour, start_time, max_time);
             max_eval = cmp::max(max_eval, eval);
+
             alpha = cmp::max(alpha, eval);
             if beta <= alpha {
                 break;
@@ -119,12 +138,16 @@ fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32,
         }
 
         let mut min_eval = i32::MAX;
+
         for mv in get_legal_moves(&current_board) {
+
             let mut new_board = current_board.clone();
             new_board.play_unsafe(mv);
+            
             let eval = minmax(&new_board, depth - 1, true, alpha, beta, bot_colour, start_time, max_time);
             min_eval = cmp::min(min_eval, eval);
             beta = cmp::min(beta, eval);
+
             if beta <= alpha {
                 break;
             }
@@ -153,10 +176,13 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
         alpha = cmp::max(alpha, best_value);
 
         for mv in get_legal_moves(current_board).iter().filter(|mv| mv.capture) {
+
             let mut new_board = current_board.clone();
             new_board.play_unsafe(*mv);
+
             let score = quiesce(&new_board, bot_colour, false, alpha, beta, start_time, max_time);
             best_value = cmp::max(best_value, score);
+
             alpha = cmp::max(alpha,best_value);
             if alpha >= beta {
                 break;
@@ -175,8 +201,10 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
         for mv in get_legal_moves(current_board).iter().filter(|mv| mv.capture) {
             let mut new_board = current_board.clone();
             new_board.play_unsafe(*mv);
+
             let score = quiesce(&new_board, bot_colour, true, alpha, beta, start_time, max_time);
             best_value = cmp::min(best_value, score);
+
             beta = cmp::min(beta,best_value);
             if alpha >= beta {
                 break;
@@ -191,6 +219,15 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
 fn order_moves_by_evaluation(mut moves: ArrayVec<(Move, i32), 218>) -> ArrayVec<Move, 218> {
     moves.sort_by_key(|&(_,v)| Reverse(v));
     return moves.into_iter().map(|(k,_)| k.clone()).collect();
+}
+
+fn late_move_reduction(mut moves: ArrayVec<Move, 218>) -> ArrayVec<Move, 218> {
+
+    if moves.len() > 1 {
+        moves.truncate(moves.len()/2);
+    }
+    
+    return moves;
 }
 
 // Python module definition
