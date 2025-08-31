@@ -21,7 +21,7 @@ pub struct ByRole<T> {
     pub king: T,
 }
 
-// Gets the role at a square. Can only be called on occupied squares
+// Gets the role at a square.
 pub fn get_role(board: &Board, square: &Bitboard) -> Option<Role> {
     if (board.role.pawn & square) != EMPTY_BITBOARD {
         return Some(Role::Pawn);

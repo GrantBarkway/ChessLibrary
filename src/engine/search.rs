@@ -17,7 +17,7 @@ use pyo3::wrap_pyfunction;
 pub static NODE_COUNT: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
 
 #[pyfunction]
-pub fn pick_move(board_fen: String, bot_time: u64, bot_colour: String) -> PyResult<(String, i32)> {
+pub fn pick_move(board_fen: String, bot_time: (u64, u64), bot_colour: String) -> PyResult<(String, i32)> {
     
     NODE_COUNT.store(0, Ordering::Relaxed);
     
@@ -31,7 +31,7 @@ pub fn pick_move(board_fen: String, bot_time: u64, bot_colour: String) -> PyResu
     
     let board = Board::from_fen(board_fen);
 
-    let max_time = Duration::from_millis(bot_time);
+    let max_search_time: Duration = search_time(bot_time);
     
     let mut ordered_legal_moves = get_legal_moves(&board);
     
@@ -40,7 +40,7 @@ pub fn pick_move(board_fen: String, bot_time: u64, bot_colour: String) -> PyResu
     
     let mut current_depth = 1;
     
-    while (start_time.elapsed() < max_time) & (current_depth < 50) {
+    while (start_time.elapsed() < max_search_time) & (current_depth < 50) {
         
         let mut local_best_mv: Option<Move> = None;
         let mut local_best_mv_evaluation: i32 = i32::MIN;
@@ -51,7 +51,7 @@ pub fn pick_move(board_fen: String, bot_time: u64, bot_colour: String) -> PyResu
             let mut current_board = board.clone();
             current_board.play_unsafe(mv);
 
-            let eval = minmax(&current_board, current_depth - 1, false, i32::MIN, i32::MAX, &bot_colour, start_time, max_time);
+            let eval = minmax(&current_board, current_depth - 1, false, i32::MIN, i32::MAX, &bot_colour, start_time, max_search_time);
             if eval > local_best_mv_evaluation {
                 local_best_mv = Some(mv);
                 local_best_mv_evaluation = eval;
@@ -60,7 +60,7 @@ pub fn pick_move(board_fen: String, bot_time: u64, bot_colour: String) -> PyResu
             move_evaluation.push((mv, eval));
         }
         
-        if (start_time.elapsed() < max_time) & (current_depth < 50) {
+        if (start_time.elapsed() < max_search_time) & (current_depth < 50) {
 
             overall_best_mv = local_best_mv;
             overall_best_mv_evaluation = local_best_mv_evaluation;
@@ -222,12 +222,35 @@ fn order_moves_by_evaluation(mut moves: ArrayVec<(Move, i32), 218>) -> ArrayVec<
 }
 
 fn late_move_reduction(mut moves: ArrayVec<Move, 218>) -> ArrayVec<Move, 218> {
-
-    if moves.len() > 1 {
+    
+    let move_list_length = moves.len();
+    if move_list_length > 16 {
+        moves.truncate(moves.len()/4);
+    } else if move_list_length > 8 {
+        moves.truncate(moves.len()/3);
+    } else if move_list_length > 1 {
         moves.truncate(moves.len()/2);
     }
     
     return moves;
+}
+
+// Determines how long to search for
+fn search_time((base, increment): (u64, u64)) -> Duration {
+
+    // Lichess determines the time classification based off of the formula (base + 40 * increment). Ultrabullet <= 29s, bullet <= 179, blitz <= 479, rapid <= 1499, classical >= 1500
+    let lichess_time_control = base + (40 * increment);
+    if lichess_time_control <= 29 {
+        return Duration::from_millis(250);
+    } else if lichess_time_control <= 179 {
+        return Duration::from_millis(increment * 1000);
+    } else if lichess_time_control <= 479 {
+        return Duration::from_millis(increment * 1000);
+    } else if lichess_time_control <= 1499 {
+        return Duration::from_millis(increment * 1000);
+    } else {
+        return Duration::from_millis(increment * 1000);
+    }
 }
 
 // Python module definition

@@ -28,7 +28,8 @@ def make_move_on_board(game_id, move, max_retries):
         except (berserk.exceptions.ApiError) as e:
             print(f"Attempt {attempt + 1} failed: {e}")
             time.sleep(2 ** attempt)
-
+    
+    client.bots.resign_game(game_id)
     print("Failed to make move after multiple attempts.")
 
 ## Accepts challenge and runs the logic for accepting input from the lichess board
@@ -63,7 +64,6 @@ def play():
 
                                 if event['initialFen'] != 'startpos':
                                     board.set_fen(event['initialFen'])
-
                                 else:
                                     board.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
@@ -80,20 +80,13 @@ def play():
 
                                 ## Makes bot move
                                 if is_bot_move(bot_colour):
-
-                                    if len(move_list) > 1:
-                                        bot_time = get_time(bot_colour, event)
-                                        next_move = get_best_move(bot_colour, bot_time)
-                                        make_move_on_board(game_id, next_move, 3)
-
-                                    ## Make first move as black quickly so opponent doesn't abandon
-                                    else:
-                                        next_move = get_best_move(bot_colour, 0)
-                                        make_move_on_board(game_id, next_move, 3)
+                                    bot_time = get_time(bot_colour, event)
+                                    next_move = get_best_move(bot_colour, bot_time)
+                                    make_move_on_board(game_id, next_move, 3)
 
 
 ## Determines if a challenge should be accepted or declined based on time control and variant. Returns a boolean
-def accept_challenge(challenge):
+def accept_challenge(challenge) -> bool:
     clock_time = challenge['challenge']['timeControl']['limit']
     clock_increment = challenge['challenge']['timeControl']['increment']
     variant = challenge['challenge']['variant']['name']
@@ -104,14 +97,13 @@ def accept_challenge(challenge):
     return False
 
 ## Gets the best move
-## 5000 IN PLACE OF BOT_TIME JUST FOR TESTING
 def get_best_move(bot_colour, bot_time):
     game_fen = board.fen()
-    best_move = chesslibrary.pick_move(game_fen, 5000, bot_colour)
+    best_move = chesslibrary.pick_move(game_fen, bot_time, bot_colour)
     return best_move[0]
 
 ## Determines if it's the bots turn
-def is_bot_move(bot_colour):
+def is_bot_move(bot_colour) -> bool:
     return (board.turn == (bot_colour == 'white'))
 
 ## Gets colour of bot pieces
@@ -120,11 +112,11 @@ def get_bot_colour(game_info):
         return 'white'
     return 'black'
 
-## Gets time on the bot's clock
+## Gets time on the bot's clock in the form (base, increment)
 def get_time(bot_colour, event):
     if(bot_colour == 'white'):
-        return math.floor((event['wtime'] - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds())
-    return math.floor((event['btime'] - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds())
+        return (math.floor((event['wtime'] - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds()), math.floor((event['winc'] - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds()))
+    return (math.floor((event['btime'] - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds()), math.floor((event['binc'] - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds()))
 
 if __name__ == "__main__":
     play()

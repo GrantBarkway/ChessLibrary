@@ -50,8 +50,8 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     let mut evaluation: i32 = 0;
     
     // Material evaluation
-    evaluation += pawn_evaluation(&white_pawns) - pawn_evaluation(&black_pawns);
-
+    evaluation += pawn_evaluation(board, &white_pawns, colour) - pawn_evaluation(board, &black_pawns, colour);
+    
     evaluation += knight_evaluation(&white_knights) - knight_evaluation(&black_knights);
     
     evaluation += bishop_evaluation(&white_bishops) - bishop_evaluation(&black_bishops);
@@ -60,50 +60,12 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * QUEEN_MATERIAL_VALUE;
     
     match colour {
-        Colour::White => {
-            if board.white_castle_side == Some(CastleSide::KingSide) {
-                if (white_pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 1000;
-                }
-            } else if board.white_castle_side == Some(CastleSide::QueenSide) {
-                if (white_pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 1000;
-                }
-            } else {
-                if (white_pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 500;
-                }
-                if (white_pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 500;
-                }
-            }
-
-            return evaluation
-        },
-        Colour::Black => {
-            if board.black_castle_side == Some(CastleSide::KingSide) {
-                if (black_pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 1000;
-                }
-            } else if board.black_castle_side == Some(CastleSide::QueenSide) {
-                if (black_pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 1000;
-                }
-            } else {
-                if (black_pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 500;
-                }
-                if (black_pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    evaluation += 500;
-                }
-            }
-            
-            return -evaluation
-        },
+        Colour::White => return evaluation,
+        Colour::Black => return -evaluation,
     }
 }
 
-pub fn pawn_evaluation(pawns: &Bitboard) -> i32 {
+pub fn pawn_evaluation(board: &Board, pawns: &Bitboard, colour: &Colour) -> i32 {
     let mut pawn_evaluation: i32 = 0;
     
     pawn_evaluation += pawns.count_ones() as i32 * PAWN_MATERIAL_VALUE;
@@ -120,6 +82,53 @@ pub fn pawn_evaluation(pawns: &Bitboard) -> i32 {
             }
         }
     }
+
+    match colour {
+        Colour::White => {
+            if board.castle_side.white == Some(CastleSide::KingSide) {
+                if (pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    pawn_evaluation += 1000;
+                }
+            } else if board.castle_side.white == Some(CastleSide::QueenSide) {
+                if (pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    pawn_evaluation += 1000;
+                }
+            } else {
+                if board.castling_rights.white.kingside == true {
+                    if (pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                        pawn_evaluation += 500;
+                    }
+                }
+                if board.castling_rights.white.queenside == true {
+                    if (pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                        pawn_evaluation += 500;
+                    }
+                }
+            }
+        }
+        Colour::Black => {
+            if board.castle_side.black == Some(CastleSide::KingSide) {
+                if (pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    pawn_evaluation -= 1000;
+                }
+            } else if board.castle_side.black == Some(CastleSide::QueenSide) {
+                if (pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                    pawn_evaluation -= 1000;
+                }
+            } else {
+                if board.castling_rights.black.kingside == true {
+                    if (pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                        pawn_evaluation -= 500;
+                    }
+                }
+                if board.castling_rights.black.queenside == true {
+                    if (pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
+                        pawn_evaluation -= 500;
+                    }
+                }
+            }
+        }
+    }
     
     return pawn_evaluation;
 }
@@ -130,7 +139,7 @@ pub fn knight_evaluation(knights: &Bitboard) -> i32 {
     knight_evaluation += knights.count_ones() as i32 * KNIGHT_MATERIAL_VALUE;
 
     for knight in knights.get_component_bitboards() {
-        knight_evaluation += KNIGHT_ATTACK_COUNT[knight.trailing_zeros() as usize] * 500
+        knight_evaluation += KNIGHT_ATTACK_COUNT[knight.trailing_zeros() as usize] * 250;
     }
 
     return knight_evaluation;
@@ -145,7 +154,7 @@ pub fn bishop_evaluation(bishops: &Bitboard) -> i32 {
         bishop_evaluation += 1000;
     }
 
-    bishop_evaluation += (bishops & BISHOP_BONUS_AREA).count_ones() as i32 * 500;
+    bishop_evaluation += (bishops & BISHOP_BONUS_AREA).count_ones() as i32 * 1000;
 
     return bishop_evaluation;
 

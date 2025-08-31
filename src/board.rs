@@ -2,7 +2,7 @@ use crate::mv::{Move, EMPTY_MOVE};
 use crate::role::{Role, ByRole};
 use crate::colour::{Colour, ByColour};
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
-use crate::movegen::{get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_legal_moves, get_queen_attacks, get_rook_attacks, get_white_pawn_attacks, get_king_attacks};
+use crate::movegen::{get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_legal_moves, get_rook_attacks, get_white_pawn_attacks, get_king_attacks};
 use crate::castle::{ByCastleSide, CastleSide};
 use crate::square::Square;
 
@@ -19,8 +19,7 @@ pub struct Board {
     pub occupied: Bitboard,
     pub turn: Colour,
     pub castling_rights: ByColour<ByCastleSide<bool>>,
-    pub white_castle_side: Option<CastleSide>,
-    pub black_castle_side: Option<CastleSide>,
+    pub castle_side: ByColour<Option<CastleSide>>,
     pub en_passant_target_square: Bitboard,
     pub last_move: Move,
     pub half_move_count: i32,
@@ -55,8 +54,10 @@ impl Board {
                         queenside: true,
                     }
             },
-            white_castle_side: None,
-            black_castle_side: None,
+            castle_side: ByColour {
+                white: None,
+                black: None, 
+            },
             en_passant_target_square: EMPTY_BITBOARD,
             last_move: EMPTY_MOVE,
             half_move_count: 0,
@@ -91,8 +92,10 @@ impl Board {
                         queenside: false,
                     }
             },
-            white_castle_side: None,
-            black_castle_side: None,
+            castle_side: ByColour { 
+                white: None,
+                black: None,
+            },
             en_passant_target_square: EMPTY_BITBOARD,
             last_move: EMPTY_MOVE,
             half_move_count: 0,
@@ -178,27 +181,23 @@ impl Board {
         self.clear_square(&mv.from_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
         match mv.to_square {
-            // White kingside
             Square::G1 => {
-                self.white_castle_side = Some(CastleSide::KingSide);
+                self.castle_side.white = Some(CastleSide::KingSide);
                 self.clear_square(&Square::H1);
                 self.set_square(&Square::F1, &Some(Role::Rook), &mv.colour);
             }
-            // White queenside
             Square::C1 => {
-                self.white_castle_side = Some(CastleSide::QueenSide);
+                self.castle_side.white = Some(CastleSide::QueenSide);
                 self.clear_square(&Square::A1);
                 self.set_square(&Square::D1, &Some(Role::Rook), &mv.colour);
             }
-            // Black kingside
             Square::G8 => {
-                self.black_castle_side = Some(CastleSide::KingSide);
+                self.castle_side.black = Some(CastleSide::KingSide);
                 self.clear_square(&Square::H8);
                 self.set_square(&Square::F8, &Some(Role::Rook), &mv.colour);
             }
-            // Black queenside
             Square::C8 => {
-                self.black_castle_side = Some(CastleSide::QueenSide);
+                self.castle_side.black = Some(CastleSide::QueenSide);
                 self.clear_square(&Square::A8);
                 self.set_square(&Square::D8, &Some(Role::Rook), &mv.colour);
             }
@@ -250,11 +249,9 @@ impl Board {
                     return true;
                 } else if get_knight_attacks(self, &king_square) & (self.colour.black & self.role.knight) != EMPTY_BITBOARD {
                     return true;
-                } else if get_bishop_attacks(self, &king_square) & (self.colour.black & self.role.bishop) != EMPTY_BITBOARD {
+                } else if get_bishop_attacks(self, &king_square) & (self.colour.black & (self.role.bishop | self.role.queen)) != EMPTY_BITBOARD {
                     return true;
-                } else if get_rook_attacks(self, &king_square) & (self.colour.black & self.role.rook) != EMPTY_BITBOARD {
-                    return true;
-                } else if get_queen_attacks(self, &king_square) & (self.colour.black & self.role.queen) != EMPTY_BITBOARD {
+                } else if get_rook_attacks(self, &king_square) & (self.colour.black & (self.role.rook | self.role.queen)) != EMPTY_BITBOARD {
                     return true;
                 } else if get_king_attacks(self, &king_square) & (self.colour.black & self.role.king) != EMPTY_BITBOARD {
                     return true;
@@ -271,11 +268,9 @@ impl Board {
                     return true;
                 } else if get_knight_attacks(self, &king_square) & (self.colour.white & self.role.knight) != EMPTY_BITBOARD {
                     return true;
-                } else if get_bishop_attacks(self, &king_square) & (self.colour.white & self.role.bishop) != EMPTY_BITBOARD {
+                } else if get_bishop_attacks(self, &king_square) & (self.colour.white & (self.role.bishop | self.role.queen)) != EMPTY_BITBOARD {
                     return true;
-                } else if get_rook_attacks(self, &king_square) & (self.colour.white & self.role.rook) != EMPTY_BITBOARD {
-                    return true;
-                } else if get_queen_attacks(self, &king_square) & (self.colour.white & self.role.queen) != EMPTY_BITBOARD {
+                } else if get_rook_attacks(self, &king_square) & (self.colour.white & (self.role.rook | self.role.queen)) != EMPTY_BITBOARD {
                     return true;
                 } else if get_king_attacks(self, &king_square) & (self.colour.white & self.role.king) != EMPTY_BITBOARD {
                     return true;
