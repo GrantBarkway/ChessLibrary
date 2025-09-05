@@ -49,8 +49,10 @@ def play():
                     game_in_progress = True
 
                     while game_in_progress:
-
+                        
                         for event in client.bots.stream_game_state(game_id):
+
+                            print(event)
 
                             ## Game over logic
                             if event.get('status') != None:
@@ -81,7 +83,7 @@ def play():
                                 ## Makes bot move
                                 if is_bot_move(bot_colour):
                                     bot_time = get_time(bot_colour, event)
-                                    next_move = get_best_move(bot_colour, bot_time)
+                                    next_move = get_best_move(bot_colour, bot_time, event)
                                     make_move_on_board(game_id, next_move, 3)
 
 
@@ -97,9 +99,9 @@ def accept_challenge(challenge) -> bool:
     return False
 
 ## Gets the best move
-def get_best_move(bot_colour, bot_time):
+def get_best_move(bot_colour, bot_time, event):
     game_fen = board.fen()
-    best_move = chesslibrary.pick_move(game_fen, bot_time, bot_colour)
+    best_move = chesslibrary.pick_move(game_fen, bot_time, bot_colour, event['moves'])
     return best_move[0]
 
 ## Determines if it's the bots turn

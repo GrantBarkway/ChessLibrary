@@ -104,6 +104,7 @@ impl Board {
     
     // Makes move on the board
     pub fn play(&mut self, mv: Move) {
+        eprintln!("{:?}", mv);
         let legal_moves = get_legal_moves(self);
         if legal_moves.contains(&mv) {
             
@@ -166,12 +167,12 @@ impl Board {
         match mv.colour {
             Some(Colour::White)  => {
                 self.set_square(&mv.from_square, &mv.role, &Some(Colour::White));
-                self.set_square(&mv.to_square, &mv.capture_piece, &Some(Colour::Black));
+                self.set_square(&mv.to_square, &mv.capture, &Some(Colour::Black));
             }
 
             Some(Colour::Black) => {
                 self.set_square(&mv.from_square, &mv.role, &Some(Colour::Black));
-                self.set_square(&mv.to_square, &mv.capture_piece, &Some(Colour::White));
+                self.set_square(&mv.to_square, &mv.capture, &Some(Colour::White));
             }
             None => ()
         }

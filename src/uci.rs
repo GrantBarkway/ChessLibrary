@@ -1,7 +1,9 @@
 use crate::mv::Move;
+use crate::board::Board;
 use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
+use crate::colour::{Colour, get_colour};
 use crate::square::{EIGHTH_RANK, FIFTH_RANK, FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FIRST_RANK, FOURTH_RANK, SECOND_RANK, SEVENTH_RANK, SIXTH_RANK, THIRD_RANK};
-use crate::role::Role;
+use crate::role::{Role, get_role};
 
 pub fn to_uci(mv: Option<Move>) -> String {
     let mut uci_string = "".to_string();
@@ -67,4 +69,155 @@ pub fn get_square_string(sq: Bitboard) -> String {
     }
     
     return square_string;
+}
+
+pub fn get_uci_square_bitboard(uci_move: &str) -> Bitboard {
+    let mut file = EMPTY_BITBOARD;
+    let mut rank = EMPTY_BITBOARD;
+    for i in uci_move.chars() {
+        if rank == EMPTY_BITBOARD {
+            if i == 'A' {
+                file = FILE_A;
+            } else if i == 'B' {
+                file = FILE_B;
+            } else if i == 'C' {
+                file = FILE_C;
+            } else if i == 'D' {
+                file = FILE_D;
+            } else if i == 'E' {
+                file = FILE_E;
+            } else if i == 'F' {
+                file = FILE_F;
+            } else if i == 'G' {
+                file = FILE_G;
+            } else if i == 'H' {
+                file = FILE_H;
+            }
+        } else {
+            if i == '1' {
+                rank = FIRST_RANK;
+            } else if i == '2' {
+                rank = SECOND_RANK;
+            } else if i == '3' {
+                rank = THIRD_RANK;
+            } else if i == '4' {
+                rank = FOURTH_RANK;
+            } else if i == '5' {
+                rank = FIFTH_RANK;
+            } else if i == '6' {
+                rank = SIXTH_RANK;
+            } else if i == '7' {
+                rank = SEVENTH_RANK;
+            } else if i == '8' {
+                rank = EIGHTH_RANK;
+            }
+        }
+    }
+
+    return file & rank;
+}
+
+// Returns a role if a uci move is a promotion, else none
+pub fn is_uci_promotion(uci_move: &str) -> Option<Role> {
+    let promotion_candidate = uci_move.chars().last().unwrap();
+    if promotion_candidate.is_alphabetic() {
+        if promotion_candidate == 'q' {
+            return Some(Role::Queen);
+        } else if promotion_candidate == 'r' {
+            return Some(Role::Rook);
+        } else if promotion_candidate == 'b' {
+            return Some(Role::Bishop);
+        } else if promotion_candidate == 'n' {
+            return Some(Role::Knight);
+        }
+    }
+    return None;
+}
+
+impl Move {
+    pub fn from_uci(board: &Board, uci: String) -> Move {
+        let to_square = get_uci_square_bitboard(&uci[0..2]);
+        let from_square = get_uci_square_bitboard(&uci[2..4]);
+        match uci.as_str() {
+            "e1g1" => return Move {
+                role: Some(Role::King),
+                colour: Some(Colour::White),
+                from_square: from_square,
+                to_square: to_square,
+                en_passant: false,
+                en_passant_target: EMPTY_BITBOARD,
+                castle: true,
+                promotion: None,
+                capture: None,
+            },
+            "e1c1" => return Move {
+                role: Some(Role::King),
+                colour: Some(Colour::White),
+                from_square: from_square,
+                to_square: to_square,
+                en_passant: false,
+                en_passant_target: EMPTY_BITBOARD,
+                castle: true,
+                promotion: None,
+                capture: None,
+            },
+            "e8g8" => return Move {
+                role: Some(Role::King),
+                colour: Some(Colour::Black),
+                from_square: from_square,
+                to_square: to_square,
+                en_passant: false,
+                en_passant_target: EMPTY_BITBOARD,
+                castle: true,
+                promotion: None,
+                capture: None,
+            },
+            "e8c8" => return Move {
+                role: Some(Role::King),
+                colour: Some(Colour::Black),
+                from_square: from_square,
+                to_square: to_square,
+                en_passant: false,
+                en_passant_target: EMPTY_BITBOARD,
+                castle: true,
+                promotion: None,
+                capture: None,
+            },
+            _ => {
+                return Move {
+                    role: if let Some(get_role) = get_role(&board, &from_square) {
+                        Some(get_role)
+                    } else {
+                        None},
+                    colour: if let Some(get_colour) = get_colour(&board, &from_square) {
+                        Some(get_colour)
+                    } else {
+                        None},
+                    from_square: from_square,
+                    to_square: to_square,
+                    en_passant_target: if (from_square & SECOND_RANK != EMPTY_BITBOARD) & (to_square & FOURTH_RANK != EMPTY_BITBOARD) {
+                        from_square.get_file() & THIRD_RANK
+                    } else if (from_square & SEVENTH_RANK != EMPTY_BITBOARD) & (to_square & FIFTH_RANK != EMPTY_BITBOARD) {
+                        from_square.get_file() & SIXTH_RANK
+                    } else {
+                        EMPTY_BITBOARD
+                    },
+                    en_passant: if to_square == board.en_passant_target_square {
+                        true
+                    } else {
+                        false
+                    },
+                    castle: false,
+                    promotion: is_uci_promotion(&uci),
+                    capture: if let Some(piece) = get_role(&board, &to_square) {
+                        Some(piece)
+                    } else if to_square == board.en_passant_target_square {
+                        Some(Role::Pawn)
+                    } else {
+                        None}
+                
+                };
+            }
+        }
+    }
 }
