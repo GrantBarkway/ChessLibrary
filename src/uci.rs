@@ -75,25 +75,28 @@ pub fn get_uci_square_bitboard(uci_move: &str) -> Bitboard {
     let mut file = EMPTY_BITBOARD;
     let mut rank = EMPTY_BITBOARD;
     for i in uci_move.chars() {
-        if rank == EMPTY_BITBOARD {
-            if i == 'A' {
+        
+        if file == EMPTY_BITBOARD {
+            if i == 'a' {
                 file = FILE_A;
-            } else if i == 'B' {
+            } else if i == 'b' {
                 file = FILE_B;
-            } else if i == 'C' {
+            } else if i == 'c' {
                 file = FILE_C;
-            } else if i == 'D' {
+            } else if i == 'd' {
                 file = FILE_D;
-            } else if i == 'E' {
+            } else if i == 'e' {
                 file = FILE_E;
-            } else if i == 'F' {
+            } else if i == 'f' {
                 file = FILE_F;
-            } else if i == 'G' {
+            } else if i == 'g' {
                 file = FILE_G;
-            } else if i == 'H' {
+            } else if i == 'h' {
                 file = FILE_H;
             }
-        } else {
+        }
+        
+        if rank == EMPTY_BITBOARD {
             if i == '1' {
                 rank = FIRST_RANK;
             } else if i == '2' {
@@ -113,7 +116,7 @@ pub fn get_uci_square_bitboard(uci_move: &str) -> Bitboard {
             }
         }
     }
-
+    
     return file & rank;
 }
 
@@ -136,8 +139,8 @@ pub fn is_uci_promotion(uci_move: &str) -> Option<Role> {
 
 impl Move {
     pub fn from_uci(board: &Board, uci: String) -> Move {
-        let to_square = get_uci_square_bitboard(&uci[0..2]);
-        let from_square = get_uci_square_bitboard(&uci[2..4]);
+        let to_square = get_uci_square_bitboard(&uci[2..4]);
+        let from_square = get_uci_square_bitboard(&uci[0..2]);
         match uci.as_str() {
             "e1g1" => return Move {
                 role: Some(Role::King),

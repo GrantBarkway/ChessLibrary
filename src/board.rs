@@ -104,7 +104,6 @@ impl Board {
     
     // Makes move on the board
     pub fn play(&mut self, mv: Move) {
-        eprintln!("{:?}", mv);
         let legal_moves = get_legal_moves(self);
         if legal_moves.contains(&mv) {
             

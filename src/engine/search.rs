@@ -17,7 +17,7 @@ use pyo3::wrap_pyfunction;
 pub static NODE_COUNT: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
 
 #[pyfunction]
-pub fn pick_move(board_fen: String, bot_time: (u64, u64), bot_colour: String, move_list: String) -> PyResult<(String, i32)> {
+pub fn pick_move(board_fen: String, bot_time: (u64, u64), bot_colour: String) -> PyResult<(String, i32)> {
     
     NODE_COUNT.store(0, Ordering::Relaxed);
     
@@ -30,18 +30,6 @@ pub fn pick_move(board_fen: String, bot_time: (u64, u64), bot_colour: String, mo
     };
     
     let board = Board::from_fen(board_fen);
-    
-    let mut uci_board = Board::starting_position();
-
-    for mv in move_list.split(" ") {
-        uci_board.play(Move::from_uci(&uci_board, mv.to_string()))
-    }
-    
-    eprintln!("Other: ");
-    board.display_board();
-    
-    eprintln!("UCI:");
-    uci_board.display_board();
     
     let max_search_time: Duration = search_time(bot_time);
     

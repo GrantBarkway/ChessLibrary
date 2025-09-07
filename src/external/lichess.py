@@ -13,8 +13,6 @@ client = berserk.Client(session)
 
 board = chess.Board()
 
-## Run by "maturin develop" in terminal and run this file
-
 ## Makes the move on the lichess board. Handles disconnections
 def make_move_on_board(game_id, move, max_retries):
     
@@ -52,7 +50,7 @@ def play():
                         
                         for event in client.bots.stream_game_state(game_id):
 
-                            print(event)
+                            ##print(event)
 
                             ## Game over logic
                             if event.get('status') != None:
@@ -83,7 +81,7 @@ def play():
                                 ## Makes bot move
                                 if is_bot_move(bot_colour):
                                     bot_time = get_time(bot_colour, event)
-                                    next_move = get_best_move(bot_colour, bot_time, event)
+                                    next_move = get_best_move(bot_colour, bot_time)
                                     make_move_on_board(game_id, next_move, 3)
 
 
@@ -99,9 +97,9 @@ def accept_challenge(challenge) -> bool:
     return False
 
 ## Gets the best move
-def get_best_move(bot_colour, bot_time, event):
+def get_best_move(bot_colour, bot_time):
     game_fen = board.fen()
-    best_move = chesslibrary.pick_move(game_fen, bot_time, bot_colour, event['moves'])
+    best_move = chesslibrary.pick_move(game_fen, bot_time, bot_colour)
     return best_move[0]
 
 ## Determines if it's the bots turn

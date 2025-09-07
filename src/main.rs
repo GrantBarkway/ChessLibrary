@@ -19,10 +19,13 @@ fn main() {
     use std::time::Instant;
     let now = Instant::now();
     
-    let mut board = Board::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string());
+    //let mut board = Board::starting_position();
     
     //let _result = pick_move("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string(), (10000, 10), "white".to_string(), "e2e4".to_string());
-    //eprintln!("{:?}", Move::from_uci(board, "e2e4".to_string()));
+    //board.display_board();;
+    //board.play(Move::from_uci(&board, "e2e4".to_string()));
+    //board.display_board();
+    
     //eprintln!("Best move: {:?}", pick_move("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string(), 5000, "white".to_string()));
     
     /*
