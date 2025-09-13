@@ -33,10 +33,14 @@ fn main() {
     for i in get_legal_moves(&mut board) {
         println!("{:?} {} to {} (castle: {}, en_passant_target_square: {}, promotion: {:?}, capture: {:?})", i.role, bitboard_to_string_move(i.from_square), bitboard_to_string_move(i.to_square), i.castle, i.en_passant_target, i.promotion, i.capture);
     }    
-
+    
     eprintln!("Boards evaluated: {:?}", perft_test(&mut board, 5));
     */
-
+    
+    for i in "e2e4 e2e4".split_whitespace() {
+        eprintln!("{:?}", i);
+    }
+    
     let elapsed = now.elapsed();
     
     //let boards_per_second = NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed) * 1000000 / elapsed.as_micros() as usize;

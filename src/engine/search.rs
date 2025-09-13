@@ -3,7 +3,7 @@ use crate::board::{Board};
 use crate::movegen::get_legal_moves;
 use crate::engine::eval::evaluate;
 use crate::mv::Move;
-use crate::uci::to_uci;
+use crate::uci::{from_uci, to_uci};
 use std::cmp;
 use std::cmp::Reverse;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -17,7 +17,7 @@ use pyo3::wrap_pyfunction;
 pub static NODE_COUNT: Lazy<AtomicUsize> = Lazy::new(|| AtomicUsize::new(0));
 
 #[pyfunction]
-pub fn pick_move(board_fen: String, bot_time: (u64, u64), bot_colour: String) -> PyResult<(String, i32)> {
+pub fn pick_move(board_starting_position: String, bot_time: (u64, u64), bot_colour: String, move_list: String) -> PyResult<(String, i32)> {
     
     NODE_COUNT.store(0, Ordering::Relaxed);
     
@@ -29,7 +29,17 @@ pub fn pick_move(board_fen: String, bot_time: (u64, u64), bot_colour: String) ->
         _ => return Ok(("Invalid colour.".to_string(), 0)),
     };
     
-    let board = Board::from_fen(board_fen);
+    let mut board: Board;
+    
+    if board_starting_position == String::from("startpos") {
+        board = Board::starting_position();   
+    } else {
+        board = Board::from_fen(board_starting_position);
+    }
+
+    for mv in move_list.split_whitespace() {
+        board.play(from_uci(&board, mv));
+    }
     
     let max_search_time: Duration = search_time(bot_time);
     
@@ -243,13 +253,13 @@ fn search_time((base, increment): (u64, u64)) -> Duration {
     if lichess_time_control <= 29 {
         return Duration::from_millis(250);
     } else if lichess_time_control <= 179 {
-        return Duration::from_millis(increment * 1000);
+        return Duration::from_millis(base * 10 + increment * 1000);
     } else if lichess_time_control <= 479 {
-        return Duration::from_millis(increment * 1000);
+        return Duration::from_millis(base * 10 + increment * 1000);
     } else if lichess_time_control <= 1499 {
-        return Duration::from_millis(increment * 1000);
+        return Duration::from_millis(base * 10 + increment * 1000);
     } else {
-        return Duration::from_millis(increment * 1000);
+        return Duration::from_millis(base * 10 + increment * 1000);
     }
 }
 

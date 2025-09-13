@@ -1,5 +1,4 @@
 import berserk
-import chess
 import math
 import random
 import time
@@ -10,8 +9,6 @@ import os
 
 session = berserk.TokenSession(os.getenv("LICHESS_API_KEY"))
 client = berserk.Client(session)
-
-board = chess.Board()
 
 ## Makes the move on the lichess board. Handles disconnections
 def make_move_on_board(game_id, move, max_retries):
@@ -49,8 +46,8 @@ def play():
                     while game_in_progress:
                         
                         for event in client.bots.stream_game_state(game_id):
-
-                            ##print(event)
+                            
+                            print(event)
 
                             ## Game over logic
                             if event.get('status') != None:
@@ -61,27 +58,18 @@ def play():
 
                             ## Board setup and first move if white
                             if event.get('type') == 'gameFull':
-
-                                if event['initialFen'] != 'startpos':
-                                    board.set_fen(event['initialFen'])
-                                else:
-                                    board.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-
+                                starting_position = event['initialFen']
                                 bot_colour = get_bot_colour(event)
                                 if bot_colour == 'white':
                                     next_move = random.choice(["e2e4","d2d4","g1f3"])
                                     make_move_on_board(game_id, next_move, 3)
-
+                            
                             ## Handles bot moves
                             elif event['type'] == 'gameState':
-                                move_list = event['moves'].split(" ")
-                                last_move = move_list[-1]
-                                board.push(chess.Move.from_uci(last_move))
-
                                 ## Makes bot move
-                                if is_bot_move(bot_colour):
+                                if is_bot_move(bot_colour, event):
                                     bot_time = get_time(bot_colour, event)
-                                    next_move = get_best_move(bot_colour, bot_time)
+                                    next_move = get_best_move(starting_position, bot_colour, bot_time, event)
                                     make_move_on_board(game_id, next_move, 3)
 
 
@@ -97,14 +85,22 @@ def accept_challenge(challenge) -> bool:
     return False
 
 ## Gets the best move
-def get_best_move(bot_colour, bot_time):
-    game_fen = board.fen()
-    best_move = chesslibrary.pick_move(game_fen, bot_time, bot_colour)
+def get_best_move(starting_position, bot_colour, bot_time, event):
+    best_move = chesslibrary.pick_move(starting_position, bot_time, bot_colour, event['moves'])
     return best_move[0]
 
 ## Determines if it's the bots turn
-def is_bot_move(bot_colour) -> bool:
-    return (board.turn == (bot_colour == 'white'))
+def is_bot_move(bot_colour, event) -> bool:
+    if bot_colour == 'white':
+        if len(event['moves'].split()) % 2 == 0:
+            return True
+        else:
+            return False
+    else:
+        if len(event['moves'].split()) % 2 == 1:
+            return True
+        else:
+            return False
 
 ## Gets colour of bot pieces
 def get_bot_colour(game_info):

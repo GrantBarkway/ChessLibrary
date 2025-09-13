@@ -137,90 +137,92 @@ pub fn is_uci_promotion(uci_move: &str) -> Option<Role> {
     return None;
 }
 
-impl Move {
-    pub fn from_uci(board: &Board, uci: String) -> Move {
-        let to_square = get_uci_square_bitboard(&uci[2..4]);
-        let from_square = get_uci_square_bitboard(&uci[0..2]);
-        match uci.as_str() {
-            "e1g1" => return Move {
-                role: Some(Role::King),
-                colour: Some(Colour::White),
+pub fn from_uci(board: &Board, uci: &str) -> Move {
+    let to_square = get_uci_square_bitboard(&uci[2..4]);
+    let from_square = get_uci_square_bitboard(&uci[0..2]);
+    match uci {
+        "e1g1" => return Move {
+            role: Some(Role::King),
+            colour: Some(Colour::White),
+            from_square: from_square,
+            to_square: to_square,
+            en_passant: false,
+            en_passant_target: EMPTY_BITBOARD,
+            castle: true,
+            promotion: None,
+            capture: None,
+        },
+        "e1c1" => return Move {
+            role: Some(Role::King),
+            colour: Some(Colour::White),
+            from_square: from_square,
+            to_square: to_square,
+            en_passant: false,
+            en_passant_target: EMPTY_BITBOARD,
+            castle: true,
+            promotion: None,
+            capture: None,
+        },
+        "e8g8" => return Move {
+            role: Some(Role::King),
+            colour: Some(Colour::Black),
+            from_square: from_square,
+            to_square: to_square,
+            en_passant: false,
+            en_passant_target: EMPTY_BITBOARD,
+            castle: true,
+            promotion: None,
+            capture: None,
+        },
+        "e8c8" => return Move {
+            role: Some(Role::King),
+            colour: Some(Colour::Black),
+            from_square: from_square,
+            to_square: to_square,
+            en_passant: false,
+            en_passant_target: EMPTY_BITBOARD,
+            castle: true,
+            promotion: None,
+            capture: None,
+        },
+        _ => {
+            return Move {
+                role: if let Some(get_role) = get_role(&board, &from_square) {
+                    Some(get_role)
+                } else {
+                    None},
+                colour: if let Some(get_colour) = get_colour(&board, &from_square) {
+                    Some(get_colour)
+                } else {
+                    None},
                 from_square: from_square,
                 to_square: to_square,
-                en_passant: false,
-                en_passant_target: EMPTY_BITBOARD,
-                castle: true,
-                promotion: None,
-                capture: None,
-            },
-            "e1c1" => return Move {
-                role: Some(Role::King),
-                colour: Some(Colour::White),
-                from_square: from_square,
-                to_square: to_square,
-                en_passant: false,
-                en_passant_target: EMPTY_BITBOARD,
-                castle: true,
-                promotion: None,
-                capture: None,
-            },
-            "e8g8" => return Move {
-                role: Some(Role::King),
-                colour: Some(Colour::Black),
-                from_square: from_square,
-                to_square: to_square,
-                en_passant: false,
-                en_passant_target: EMPTY_BITBOARD,
-                castle: true,
-                promotion: None,
-                capture: None,
-            },
-            "e8c8" => return Move {
-                role: Some(Role::King),
-                colour: Some(Colour::Black),
-                from_square: from_square,
-                to_square: to_square,
-                en_passant: false,
-                en_passant_target: EMPTY_BITBOARD,
-                castle: true,
-                promotion: None,
-                capture: None,
-            },
-            _ => {
-                return Move {
-                    role: if let Some(get_role) = get_role(&board, &from_square) {
-                        Some(get_role)
-                    } else {
-                        None},
-                    colour: if let Some(get_colour) = get_colour(&board, &from_square) {
-                        Some(get_colour)
-                    } else {
-                        None},
-                    from_square: from_square,
-                    to_square: to_square,
-                    en_passant_target: if (from_square & SECOND_RANK != EMPTY_BITBOARD) & (to_square & FOURTH_RANK != EMPTY_BITBOARD) {
+                en_passant_target: if let Some(Role::Pawn) = get_role(&board, &from_square) {
+                    if (from_square & SECOND_RANK != EMPTY_BITBOARD) & (to_square & FOURTH_RANK != EMPTY_BITBOARD) {
                         from_square.get_file() & THIRD_RANK
                     } else if (from_square & SEVENTH_RANK != EMPTY_BITBOARD) & (to_square & FIFTH_RANK != EMPTY_BITBOARD) {
                         from_square.get_file() & SIXTH_RANK
                     } else {
                         EMPTY_BITBOARD
-                    },
-                    en_passant: if to_square == board.en_passant_target_square {
-                        true
-                    } else {
-                        false
-                    },
-                    castle: false,
-                    promotion: is_uci_promotion(&uci),
-                    capture: if let Some(piece) = get_role(&board, &to_square) {
-                        Some(piece)
-                    } else if to_square == board.en_passant_target_square {
-                        Some(Role::Pawn)
-                    } else {
-                        None}
-                
-                };
-            }
+                    }
+                } else {
+                    EMPTY_BITBOARD
+                },
+                en_passant: if to_square == board.en_passant_target_square {
+                    true
+                } else {
+                    false
+                },
+                castle: false,
+                promotion: is_uci_promotion(&uci),
+                capture: if let Some(piece) = get_role(&board, &to_square) {
+                    Some(piece)
+                } else if to_square == board.en_passant_target_square {
+                    Some(Role::Pawn)
+                } else {
+                    None}
+            
+            };
         }
     }
 }
