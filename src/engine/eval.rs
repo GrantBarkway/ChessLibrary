@@ -50,6 +50,8 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     let mut evaluation: i32 = 0;
     
     // Material evaluation
+    evaluation += material_evaluation(&white_pawns, &black_pawns, &white_knights, &black_knights, &white_bishops, &black_bishops, &white_rooks, &black_rooks, &white_queens, &black_queens);
+    
     evaluation += pawn_evaluation(board, &white_pawns, colour) - pawn_evaluation(board, &black_pawns, colour);
     
     evaluation += knight_evaluation(&white_knights) - knight_evaluation(&black_knights);
@@ -65,43 +67,54 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     }
 }
 
+pub fn material_evaluation(white_pawns: &Bitboard, black_pawns: &Bitboard, white_knights: &Bitboard, black_knights: &Bitboard, white_bishops: &Bitboard, black_bishops: &Bitboard, white_rooks: &Bitboard, black_rooks: &Bitboard, white_queens: &Bitboard, black_queens: &Bitboard) -> i32 {
+    let mut material_evaluation: i32 = 0;
+    
+    material_evaluation += (white_pawns.count_ones() - black_pawns.count_ones()) as i32 * PAWN_MATERIAL_VALUE;
+    material_evaluation += (white_knights.count_ones() - black_knights.count_ones()) as i32 * KNIGHT_MATERIAL_VALUE;
+    material_evaluation += (white_bishops.count_ones() - black_bishops.count_ones()) as i32 * BISHOP_MATERIAL_VALUE;
+    material_evaluation += (white_rooks.count_ones() - black_rooks.count_ones()) as i32 * ROOK_MATERIAL_VALUE;
+    material_evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * QUEEN_MATERIAL_VALUE;
+
+    return material_evaluation;
+}
+
 pub fn pawn_evaluation(board: &Board, pawns: &Bitboard, colour: &Colour) -> i32 {
     let mut pawn_evaluation: i32 = 0;
     
-    pawn_evaluation += pawns.count_ones() as i32 * PAWN_MATERIAL_VALUE;
-    
-    // Half a pawn penalty for doubled pawns and isolated pawns
+    // Penalty for doubled pawns and isolated pawns
     for (file, neighbours) in NEIGHBOUR_FILES {
         match (file & pawns).count_ones() {
-            x if x > 1 => pawn_evaluation -= 1000,
             0 => (),
-            _ => {
+            1 => {
                 if (neighbours & pawns) == EMPTY_BITBOARD {
-                    pawn_evaluation -= 1000;
+                    pawn_evaluation -= PAWN_MATERIAL_VALUE/4;
                 }
             }
+            _ => pawn_evaluation -= PAWN_MATERIAL_VALUE/4,
         }
     }
-
+    
+    // Pawn structure bonuses
     match colour {
         Colour::White => {
             if board.castle_side.white == Some(CastleSide::KingSide) {
                 if (pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    pawn_evaluation += 1000;
+                    pawn_evaluation += PAWN_MATERIAL_VALUE/2;
                 }
             } else if board.castle_side.white == Some(CastleSide::QueenSide) {
                 if (pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    pawn_evaluation += 1000;
+                    pawn_evaluation += PAWN_MATERIAL_VALUE/2;
                 }
             } else {
                 if board.castling_rights.white.kingside == true {
                     if (pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                        pawn_evaluation += 500;
+                        pawn_evaluation += PAWN_MATERIAL_VALUE/4;
                     }
                 }
                 if board.castling_rights.white.queenside == true {
                     if (pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                        pawn_evaluation += 500;
+                        pawn_evaluation += PAWN_MATERIAL_VALUE/4;
                     }
                 }
             }
@@ -109,21 +122,21 @@ pub fn pawn_evaluation(board: &Board, pawns: &Bitboard, colour: &Colour) -> i32 
         Colour::Black => {
             if board.castle_side.black == Some(CastleSide::KingSide) {
                 if (pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    pawn_evaluation -= 1000;
+                    pawn_evaluation -= PAWN_MATERIAL_VALUE/2;
                 }
             } else if board.castle_side.black == Some(CastleSide::QueenSide) {
                 if (pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                    pawn_evaluation -= 1000;
+                    pawn_evaluation -= PAWN_MATERIAL_VALUE/2;
                 }
             } else {
                 if board.castling_rights.black.kingside == true {
                     if (pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                        pawn_evaluation -= 500;
+                        pawn_evaluation -= PAWN_MATERIAL_VALUE/4;
                     }
                 }
                 if board.castling_rights.black.queenside == true {
                     if (pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                        pawn_evaluation -= 500;
+                        pawn_evaluation -= PAWN_MATERIAL_VALUE/4;
                     }
                 }
             }
@@ -136,10 +149,8 @@ pub fn pawn_evaluation(board: &Board, pawns: &Bitboard, colour: &Colour) -> i32 
 pub fn knight_evaluation(knights: &Bitboard) -> i32 {
     let mut knight_evaluation: i32 = 0;
 
-    knight_evaluation += knights.count_ones() as i32 * KNIGHT_MATERIAL_VALUE;
-
     for knight in knights.get_component_bitboards() {
-        knight_evaluation += KNIGHT_ATTACK_COUNT[knight.trailing_zeros() as usize] * 250;
+        knight_evaluation += KNIGHT_ATTACK_COUNT[knight.trailing_zeros() as usize] * PAWN_MATERIAL_VALUE/10;
     }
 
     return knight_evaluation;
@@ -148,10 +159,8 @@ pub fn knight_evaluation(knights: &Bitboard) -> i32 {
 pub fn bishop_evaluation(bishops: &Bitboard) -> i32 {
     let mut bishop_evaluation: i32 = 0;
 
-    bishop_evaluation += bishops.count_ones() as i32 * BISHOP_MATERIAL_VALUE;
-
     if bishops.count_ones() > 1 {
-        bishop_evaluation += 1000;
+        bishop_evaluation += PAWN_MATERIAL_VALUE/2;
     }
 
     bishop_evaluation += (bishops & BISHOP_BONUS_AREA).count_ones() as i32 * 1000;

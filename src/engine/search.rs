@@ -29,6 +29,13 @@ pub fn pick_move(board_starting_position: String, bot_time: (u64, u64), bot_colo
         _ => return Ok(("Invalid colour.".to_string(), 0)),
     };
     
+    let opponent_colour;
+    if bot_colour == Colour::White {
+        opponent_colour = Colour::Black;
+    } else {
+        opponent_colour = Colour::White;
+    }
+    
     let mut board: Board;
     
     if board_starting_position == String::from("startpos") {
@@ -60,8 +67,14 @@ pub fn pick_move(board_starting_position: String, bot_time: (u64, u64), bot_colo
 
             let mut current_board = board.clone();
             current_board.play_unsafe(mv);
+            
+            let eval;
+            if current_board.is_stalemate(&opponent_colour) {
+                eval = -1000;
+            } else {
+                eval = minmax(&current_board, current_depth - 1, false, i32::MIN, i32::MAX, &bot_colour, start_time, max_search_time);
+            }
 
-            let eval = minmax(&current_board, current_depth - 1, false, i32::MIN, i32::MAX, &bot_colour, start_time, max_search_time);
             if eval > local_best_mv_evaluation {
                 local_best_mv = Some(mv);
                 local_best_mv_evaluation = eval;
@@ -185,7 +198,7 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
 
         alpha = cmp::max(alpha, best_value);
 
-        for mv in get_legal_moves(current_board).iter().filter(|mv| (mv.capture != None)) {
+        for mv in get_legal_moves(current_board).iter().filter(|mv| mv.capture != None) {
 
             let mut new_board = current_board.clone();
             new_board.play_unsafe(*mv);
@@ -208,7 +221,7 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
 
         beta = cmp::min(beta, best_value);
 
-        for mv in get_legal_moves(current_board).iter().filter(|mv| (mv.capture != None)) {
+        for mv in get_legal_moves(current_board).iter().filter(|mv| mv.capture != None) {
             let mut new_board = current_board.clone();
             new_board.play_unsafe(*mv);
 
@@ -231,6 +244,7 @@ fn order_moves_by_evaluation(mut moves: ArrayVec<(Move, i32), 218>) -> ArrayVec<
     return moves.into_iter().map(|(k,_)| k.clone()).collect();
 }
 
+// Doesn't bother searching lower ranked moves (only applied in higher depths)
 fn late_move_reduction(mut moves: ArrayVec<Move, 218>) -> ArrayVec<Move, 218> {
     
     let move_list_length = moves.len();
@@ -253,13 +267,13 @@ fn search_time((base, increment): (u64, u64)) -> Duration {
     if lichess_time_control <= 29 {
         return Duration::from_millis(250);
     } else if lichess_time_control <= 179 {
-        return Duration::from_millis(base * 10 + increment * 1000);
+        return Duration::from_millis(base * 10 + increment * 1500);
     } else if lichess_time_control <= 479 {
-        return Duration::from_millis(base * 10 + increment * 1000);
+        return Duration::from_millis(base * 10 + increment * 1500);
     } else if lichess_time_control <= 1499 {
-        return Duration::from_millis(base * 10 + increment * 1000);
+        return Duration::from_millis(base * 10 + increment * 1500);
     } else {
-        return Duration::from_millis(base * 10 + increment * 1000);
+        return Duration::from_millis(base * 10 + increment * 1500);
     }
 }
 

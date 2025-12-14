@@ -54,3 +54,12 @@ impl Move {
         }
     }
 }
+
+pub fn is_check(board: &Board, mv: Move) -> bool {
+    
+    let mut board_copy = board.clone();
+    board_copy.play(mv);
+    
+    return board_copy.is_check(&board_copy.turn)
+
+}

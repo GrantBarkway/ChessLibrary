@@ -4,10 +4,10 @@ use arrayvec::ArrayVec;
 use chesslibrary::bitboard::EMPTY_BITBOARD;
 use chesslibrary::board::Board;
 use chesslibrary::engine::search::{pick_move, NODE_COUNT};
-//use chesslibrary::engine::eval::evaluate;
+use chesslibrary::engine::eval::evaluate;
 use chesslibrary::movegen::{get_legal_moves, get_white_moves};
 use chesslibrary::bitboard::{Bitboard, bitboard_to_string_move};
-//use chesslibrary::colour::{Colour};
+use chesslibrary::colour::{Colour};
 use chesslibrary::perft::perft_test;
 use chesslibrary::role::Role;
 use chesslibrary::square::{Square, SECOND_RANK, SEVENTH_RANK, SIXTH_RANK, THIRD_RANK};
@@ -19,12 +19,9 @@ fn main() {
     use std::time::Instant;
     let now = Instant::now();
     
-    //let mut board = Board::starting_position();
-    
-    //let _result = pick_move("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string(), (10000, 10), "white".to_string(), "e2e4".to_string());
-    //board.display_board();;
-    //board.play(Move::from_uci(&board, "e2e4".to_string()));
-    //board.display_board();
+    let mut board = Board::from_fen("3r1rk1/1R3ppp/p7/8/3p2P1/P2Pp3/P3P2q/2QK2R1 w - - 2 30".to_string());
+
+    board.display_board();
     
     //eprintln!("Best move: {:?}", pick_move("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string(), 5000, "white".to_string()));
     
@@ -37,15 +34,17 @@ fn main() {
     eprintln!("Boards evaluated: {:?}", perft_test(&mut board, 5));
     */
     
-    for i in "e2e4 e2e4".split_whitespace() {
-        eprintln!("{:?}", i);
+    /*
+    for i in get_legal_moves(&board) {
+        println!("Move: {:?} from {} to {}", i.role, bitboard_to_string_move(i.from_square), bitboard_to_string_move(i.to_square));
     }
+    */
     
     let elapsed = now.elapsed();
     
-    //let boards_per_second = NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed) * 1000000 / elapsed.as_micros() as usize;
+    let boards_per_second = NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed) * 1000000 / elapsed.as_micros() as usize;
     
     println!("Elapsed: {:.2?}", elapsed);
-    //println!("Nodes evaluated per second: {:.2?}", boards_per_second);
+    println!("Nodes evaluated per second: {:.2?}", boards_per_second);
     //println!("Nodes evaluated: {:?}", NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed));
 }

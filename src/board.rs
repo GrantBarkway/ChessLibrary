@@ -1,7 +1,7 @@
 use crate::mv::{Move, EMPTY_MOVE};
 use crate::role::{Role, ByRole};
 use crate::colour::{Colour, ByColour};
-use crate::bitboard::{Bitboard, EMPTY_BITBOARD};
+use crate::bitboard::{Bitboard, EMPTY_BITBOARD, bitboard_to_string_move};
 use crate::movegen::{get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_legal_moves, get_rook_attacks, get_white_pawn_attacks, get_king_attacks};
 use crate::castle::{ByCastleSide, CastleSide};
 use crate::square::Square;
@@ -104,6 +104,9 @@ impl Board {
     
     // Makes move on the board
     pub fn play(&mut self, mv: Move) {
+
+        println!("Playing move: {:?} from {} to {}", mv.role, bitboard_to_string_move(mv.from_square), bitboard_to_string_move(mv.to_square));
+
         let legal_moves = get_legal_moves(self);
         if legal_moves.contains(&mv) {
             
