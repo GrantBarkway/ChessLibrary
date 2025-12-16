@@ -130,6 +130,7 @@ impl Board {
 
             self.half_move_count += 1;
         } else {
+            eprintln!("Move: {:?}", mv);
             panic!("Not a legal move!")
         }
     }

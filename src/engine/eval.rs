@@ -57,7 +57,7 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     evaluation += knight_evaluation(&white_knights) - knight_evaluation(&black_knights);
     
     evaluation += bishop_evaluation(&white_bishops) - bishop_evaluation(&black_bishops);
-
+    
     evaluation += (white_rooks.count_ones() - black_rooks.count_ones()) as i32 * ROOK_MATERIAL_VALUE;
     evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * QUEEN_MATERIAL_VALUE;
     
@@ -109,12 +109,12 @@ pub fn pawn_evaluation(board: &Board, pawns: &Bitboard, colour: &Colour) -> i32 
             } else {
                 if board.castling_rights.white.kingside == true {
                     if (pawns & WHITE_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                        pawn_evaluation += PAWN_MATERIAL_VALUE/4;
+                        pawn_evaluation += PAWN_MATERIAL_VALUE/3;
                     }
                 }
                 if board.castling_rights.white.queenside == true {
                     if (pawns & WHITE_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                        pawn_evaluation += PAWN_MATERIAL_VALUE/4;
+                        pawn_evaluation += PAWN_MATERIAL_VALUE/3;
                     }
                 }
             }
@@ -131,12 +131,12 @@ pub fn pawn_evaluation(board: &Board, pawns: &Bitboard, colour: &Colour) -> i32 
             } else {
                 if board.castling_rights.black.kingside == true {
                     if (pawns & BLACK_KINGSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                        pawn_evaluation -= PAWN_MATERIAL_VALUE/4;
+                        pawn_evaluation -= PAWN_MATERIAL_VALUE/3;
                     }
                 }
                 if board.castling_rights.black.queenside == true {
                     if (pawns & BLACK_QUEENSIDE_PAWN_STRUCTURE).count_ones() > 2 {
-                        pawn_evaluation -= PAWN_MATERIAL_VALUE/4;
+                        pawn_evaluation -= PAWN_MATERIAL_VALUE/3;
                     }
                 }
             }
@@ -167,4 +167,8 @@ pub fn bishop_evaluation(bishops: &Bitboard) -> i32 {
 
     return bishop_evaluation;
 
+}
+
+pub fn calculate_mobility(pawns: &Bitboard, knights: &Bitboard, bishops: &Bitboard, rooks: &Bitboard, queens: &Bitboard, king: &Bitboard) {
+    
 }

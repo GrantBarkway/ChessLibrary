@@ -4,7 +4,7 @@ use crate::colour::Colour;
 use crate::role::Role;
 
 impl Board {
-
+    
     // Not very efficient, just need primitive for testing
     pub fn from_fen(fen: String) -> Board {
         let mut board = Board::empty_board();
