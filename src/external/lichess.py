@@ -23,9 +23,11 @@ def make_move_on_board(game_id, move, max_retries):
         except (berserk.exceptions.ApiError) as e:
             print(f"Attempt {attempt + 1} failed: {e}")
             time.sleep(2 ** attempt)
-    
-    client.bots.resign_game(game_id)
-    print("Failed to make move after multiple attempts.")
+    try: 
+        print("Failed to make move after multiple attempts.")
+        client.bots.resign_game(game_id)
+    except:
+        print("Unable to resign")
 
 ## Accepts challenge and runs the logic for accepting input from the lichess board
 def play():
@@ -38,11 +40,14 @@ def play():
             if challenge.get('type') == 'challenge':
 
                 if accept_challenge(challenge):
-
+                    
                     game_id = challenge['challenge']['id']
-                    client.challenges.accept(game_id)
-                    game_in_progress = True
-
+                    try:
+                        client.challenges.accept(game_id)
+                        game_in_progress = True
+                    except:
+                        print("Could not accept challenge.")
+                    
                     while game_in_progress:
                         
                         for event in client.bots.stream_game_state(game_id):

@@ -6,7 +6,6 @@ use crate::movegen::{get_bishop_attacks, get_black_pawn_attacks, get_knight_atta
 use crate::castle::{ByCastleSide, CastleSide};
 use crate::square::Square;
 
-
 // Order of board
 // ....
 //0b1000000000000000,0b100000000000000,0b10000000000000,0b1000000000000,0b100000000000,0b10000000000,0b1000000000,0b100000000
@@ -159,11 +158,40 @@ impl Board {
     }
     
     pub fn play_normal(&mut self, mv: Move) {
+        
+        // Takes castling rights if king or rook is moved
+        self.take_castling_rights(mv);
+        
         self.clear_square(&mv.to_square);
         self.set_square(&mv.to_square, &mv.role, &mv.colour);
         self.clear_square(&mv.from_square);
     }
     
+    // Takes castling rights if king or rook is moved or rook is captured
+    pub fn take_castling_rights(&mut self, mv: Move) {
+        if mv.role == Some(Role::Rook) {
+            match mv.from_square {
+                Square::A1 => self.castling_rights.white.queenside = false,
+                Square::H1 => self.castling_rights.white.kingside = false,
+                Square::A8 => self.castling_rights.black.queenside = false,
+                Square::H8 => self.castling_rights.black.kingside = false,
+                _ => ()
+            }
+        } else if mv.role == Some(Role::King) {
+            match mv.from_square {
+                Square::E1 => {
+                    self.castling_rights.white.kingside = false;
+                    self.castling_rights.white.queenside = false;
+                },
+                Square::E8 => {
+                    self.castling_rights.black.kingside = false;
+                    self.castling_rights.black.queenside = false;
+                },
+                _ => ()
+            }
+        }
+    }
+
     pub fn unplay(&mut self, mv: Move) {
         self.clear_square(&mv.to_square);
         self.clear_square(&mv.from_square);
@@ -189,26 +217,34 @@ impl Board {
                 self.castle_side.white = Some(CastleSide::KingSide);
                 self.clear_square(&Square::H1);
                 self.set_square(&Square::F1, &Some(Role::Rook), &mv.colour);
+                self.castling_rights.white.kingside = false;
+                self.castling_rights.white.queenside = false;
             }
             Square::C1 => {
                 self.castle_side.white = Some(CastleSide::QueenSide);
                 self.clear_square(&Square::A1);
                 self.set_square(&Square::D1, &Some(Role::Rook), &mv.colour);
+                self.castling_rights.white.kingside = false;
+                self.castling_rights.white.queenside = false;
             }
             Square::G8 => {
                 self.castle_side.black = Some(CastleSide::KingSide);
                 self.clear_square(&Square::H8);
                 self.set_square(&Square::F8, &Some(Role::Rook), &mv.colour);
+                self.castling_rights.black.kingside = false;
+                self.castling_rights.black.queenside = false;
             }
             Square::C8 => {
                 self.castle_side.black = Some(CastleSide::QueenSide);
                 self.clear_square(&Square::A8);
                 self.set_square(&Square::D8, &Some(Role::Rook), &mv.colour);
+                self.castling_rights.black.kingside = false;
+                self.castling_rights.black.queenside = false;
             }
             _ => (),
         }
     }
-
+    
     pub fn play_en_passant(&mut self, mv: Move) {
         let opponent_pawn_square: Bitboard;
         self.clear_square(&mv.from_square);
@@ -240,11 +276,10 @@ impl Board {
         }
     }
     
-    // Determines if the king of specified colour is in check on a given board
+    // Determines if the king of specified colour is in check on a given board. This is more efficient than checking all attacks for a given colour as it avoids recomputing
     pub fn is_check(&self, colour_to_check: &Colour) -> bool {
         let king_square: Bitboard;
         match colour_to_check {
-            
             Colour::White => {
                 king_square = self.colour.white & self.role.king;
                 
@@ -263,7 +298,6 @@ impl Board {
                     return false;
                 }
             }
-            
             Colour::Black => {
                 king_square = self.colour.black & self.role.king;
                 
@@ -282,7 +316,6 @@ impl Board {
                     return false;
                 }
             }
-
         }
     }
 

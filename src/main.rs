@@ -19,15 +19,15 @@ fn main() {
     use std::time::Instant;
     let now = Instant::now();
     
-    let mut board = Board::starting_position();
-
+    let mut board = Board::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string());
+    
     board.display_board();
     
     //eprintln!("Best move: {:?}", pick_move("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".to_string(), 5000, "white".to_string()));
     
     // List of legal moves
-    for i in get_legal_moves(&mut board) {
-        println!("{:?} {} to {} (castle: {}, en_passant_target_square: {}, promotion: {:?}, capture: {:?})", i.role, bitboard_to_string_move(i.from_square), bitboard_to_string_move(i.to_square), i.castle, i.en_passant_target, i.promotion, i.capture);
+    for i in 0..100000000 {
+        board.is_check(&Colour::White);
     }    
     
     // eprintln!("Boards evaluated: {:?}", perft_test(&mut board, 5));

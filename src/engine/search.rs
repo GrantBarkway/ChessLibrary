@@ -1,7 +1,7 @@
 use crate::colour::Colour;
 use crate::board::{Board};
 use crate::movegen::get_legal_moves;
-use crate::engine::eval::evaluate;
+use crate::engine::eval::{calculate_attack_mobility, evaluate};
 use crate::mv::Move;
 use crate::uci::{from_uci, to_uci};
 use std::cmp;
@@ -106,7 +106,8 @@ pub fn pick_move(board_starting_position: String, bot_time: (u64, u64), bot_colo
     }
     
     eprintln!("Move picked: {:#?} with evaluation {}. Nodes searched: {} in {:?} at depth {}", overall_best_mv, overall_best_mv_evaluation, NODE_COUNT.load(std::sync::atomic::Ordering::Relaxed), start_time.elapsed(), current_depth);
-    
+    eprintln!("Current mobility for white/black: {:?}", calculate_attack_mobility(&board, &Colour::White));
+
     return Ok((to_uci(overall_best_mv), overall_best_mv_evaluation));
 }
 
