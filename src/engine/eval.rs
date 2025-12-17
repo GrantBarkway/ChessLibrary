@@ -27,8 +27,8 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     let mut evaluation: i32 = 0;
     
     // Material evaluation
-    evaluation += material_evaluation(board);
-    evaluation += castling_bonus(board, &Colour::White) - castling_bonus(board, &Colour::Black);
+    evaluation += material_evaluation(board, &Colour::White) - material_evaluation(board, &Colour::Black);
+    evaluation += castling_evaluation(board, &Colour::White) - castling_evaluation(board, &Colour::Black);
     
     let mut adjusted_mobility_evaluation: f32 = evaluation as f32;
     
@@ -50,31 +50,42 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     }
 }
 
-pub fn material_evaluation(board: &Board) -> i32 {
+// Gets overall material evaluation for a colour of 
+pub fn material_evaluation(board: &Board, colour: &Colour) -> i32 {
     let mut material_evaluation: i32 = 0;
+    let pawns: Bitboard;
+    let knights: Bitboard;
+    let bishops: Bitboard;
+    let rooks: Bitboard;
+    let queens: Bitboard;
 
-    let white_pawns = board.role.pawn & board.colour.white;
-    let white_knights = board.role.knight & board.colour.white;
-    let white_bishops = board.role.bishop & board.colour.white;
-    let white_rooks = board.role.rook & board.colour.white;
-    let white_queens = board.role.queen & board.colour.white;
+    match colour {
+        Colour::White => {
+            pawns = board.role.pawn & board.colour.white;
+            knights = board.role.knight & board.colour.white;
+            bishops = board.role.bishop & board.colour.white;
+            rooks = board.role.rook & board.colour.white;
+            queens = board.role.queen & board.colour.white;
+        }
+        Colour::Black => {
+            pawns = board.role.pawn & board.colour.black;
+            knights = board.role.knight & board.colour.black;
+            bishops = board.role.bishop & board.colour.black;
+            rooks = board.role.rook & board.colour.black;
+            queens = board.role.queen & board.colour.black;
+        }
+    }
     
-    let black_pawns = board.role.pawn & board.colour.black;
-    let black_knights = board.role.knight & board.colour.black;
-    let black_bishops = board.role.bishop & board.colour.black;
-    let black_rooks = board.role.rook & board.colour.black;
-    let black_queens = board.role.queen & board.colour.black;
-    
-    material_evaluation += (white_pawns.count_ones() - black_pawns.count_ones()) as i32 * PAWN_MATERIAL_VALUE;
-    material_evaluation += (white_knights.count_ones() - black_knights.count_ones()) as i32 * KNIGHT_MATERIAL_VALUE;
-    material_evaluation += (white_bishops.count_ones() - black_bishops.count_ones()) as i32 * BISHOP_MATERIAL_VALUE;
-    material_evaluation += (white_rooks.count_ones() - black_rooks.count_ones()) as i32 * ROOK_MATERIAL_VALUE;
-    material_evaluation += (white_queens.count_ones() - black_queens.count_ones()) as i32 * QUEEN_MATERIAL_VALUE;
+    material_evaluation += pawns.count_ones() as i32 * PAWN_MATERIAL_VALUE;
+    material_evaluation += knights.count_ones() as i32 * KNIGHT_MATERIAL_VALUE;
+    material_evaluation += bishops.count_ones() as i32 * BISHOP_MATERIAL_VALUE;
+    material_evaluation += rooks.count_ones() as i32 * ROOK_MATERIAL_VALUE;
+    material_evaluation += queens.count_ones() as i32 * QUEEN_MATERIAL_VALUE;
 
     return material_evaluation;
 }
 
-pub fn castling_bonus(board: &Board, colour: &Colour) -> i32 {
+pub fn castling_evaluation(board: &Board, colour: &Colour) -> i32 {
     let mut pawn_evaluation: i32 = 0;
     let pawns: Bitboard;
     match colour {
