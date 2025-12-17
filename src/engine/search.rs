@@ -92,11 +92,7 @@ pub fn pick_move(board_starting_position: String, bot_time: (u64, u64), bot_colo
                 break;
             }
             
-            if current_depth >= 3 {
-                ordered_legal_moves = late_move_reduction(order_moves_by_evaluation(move_evaluation));
-            } else {
-                ordered_legal_moves = order_moves_by_evaluation(move_evaluation);
-            }
+            ordered_legal_moves = order_moves_by_evaluation(move_evaluation);
 
             current_depth += 1;
 
@@ -243,21 +239,6 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
 fn order_moves_by_evaluation(mut moves: ArrayVec<(Move, i32), 218>) -> ArrayVec<Move, 218> {
     moves.sort_by_key(|&(_,v)| Reverse(v));
     return moves.into_iter().map(|(k,_)| k.clone()).collect();
-}
-
-// Doesn't bother searching lower ranked moves (only applied in higher depths)
-fn late_move_reduction(mut moves: ArrayVec<Move, 218>) -> ArrayVec<Move, 218> {
-    
-    let move_list_length = moves.len();
-    if move_list_length > 16 {
-        moves.truncate(moves.len()/4);
-    } else if move_list_length > 8 {
-        moves.truncate(moves.len()/3);
-    } else if move_list_length > 1 {
-        moves.truncate(moves.len()/2);
-    }
-    
-    return moves;
 }
 
 // Determines how long to search for
