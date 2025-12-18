@@ -1,4 +1,4 @@
-use crate::movegen::{get_king_attacks, get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_queen_attacks, get_rook_attacks, get_white_pawn_attacks};
+use crate::movegen::{get_king_attacks, get_bishop_attacks, get_black_pawn_attacks, get_knight_attacks, get_rook_attacks, get_white_pawn_attacks};
 use crate::square::{NEIGHBOUR_FILES};
 use crate::{board::Board};
 use crate::colour::Colour;
