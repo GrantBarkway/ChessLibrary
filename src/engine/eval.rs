@@ -12,6 +12,7 @@ const WHITE_KINGSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b10000011100000000);
 const WHITE_QUEENSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b100000001110000000000000);
 const BLACK_KINGSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b111000000010000000000000000000000000000000000000000);
 const BLACK_QUEENSIDE_PAWN_STRUCTURE: Bitboard = Bitboard(0b11100000100000000000000000000000000000000000000000000000);
+const DFILE_EFILE_PAWN_CENTER_SQUARES: Bitboard = Bitboard(0b0000000000000000000110000001100000011000000110000000000000000000);
 
 const PAWN_MATERIAL_VALUE: i32 = 10000;
 const KNIGHT_MATERIAL_VALUE: i32 = 30500;
@@ -28,12 +29,15 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
     
     // Material evaluation
     evaluation += material_evaluation(board, &Colour::White) - material_evaluation(board, &Colour::Black);
+    evaluation += pawn_evaluation(board, &(board.colour.white & board.role.pawn)) - pawn_evaluation(board, &(board.colour.black & board.role.pawn));
     evaluation += castling_evaluation(board, &Colour::White) - castling_evaluation(board, &Colour::Black);
     
+    //Testing additional 100 to help with mobility
     let mut adjusted_mobility_evaluation: f32 = evaluation as f32;
     
     match colour {
         Colour::White => {
+            adjusted_mobility_evaluation += 100.0;
             if (evaluation != i32::MIN) & (evaluation != i32::MAX) {
                 adjusted_mobility_evaluation *= calculate_attack_mobility(board, &Colour::White);
             }
@@ -41,6 +45,7 @@ pub fn evaluate(board: &Board, colour: &Colour) -> i32 {
             return evaluation
         },
         Colour::Black => {
+            adjusted_mobility_evaluation -= 100.0;
             if (evaluation != i32::MIN) & (evaluation != i32::MAX) {
                 adjusted_mobility_evaluation *= calculate_attack_mobility(board, &Colour::Black);
             }
@@ -81,8 +86,31 @@ pub fn material_evaluation(board: &Board, colour: &Colour) -> i32 {
     material_evaluation += bishops.count_ones() as i32 * BISHOP_MATERIAL_VALUE;
     material_evaluation += rooks.count_ones() as i32 * ROOK_MATERIAL_VALUE;
     material_evaluation += queens.count_ones() as i32 * QUEEN_MATERIAL_VALUE;
-
+    
     return material_evaluation;
+}
+
+// evaluation for pawns
+pub fn pawn_evaluation(board: &Board, pawns: &Bitboard) -> i32 {
+    let mut pawn_evaluation: i32 = 0;
+    
+    pawn_evaluation += (DFILE_EFILE_PAWN_CENTER_SQUARES & pawns).count_ones() as i32 * PAWN_MATERIAL_VALUE/100;
+
+    // Half a pawn penalty for doubled pawns and quarter pawn penalty for isolated pawns
+    for (file, neighbours) in NEIGHBOUR_FILES {
+        if (file & pawns).count_ones() > 1 {
+            pawn_evaluation -= PAWN_MATERIAL_VALUE/2
+        }
+        if (neighbours & pawns) == EMPTY_BITBOARD {
+            pawn_evaluation -= PAWN_MATERIAL_VALUE/4;
+        }
+        // Passed pawn bonus
+        if ((board.role.pawn ^ pawns) & file).count_ones() == 0 {
+            pawn_evaluation += PAWN_MATERIAL_VALUE/8;
+        }
+    }
+
+    return pawn_evaluation;
 }
 
 pub fn castling_evaluation(board: &Board, colour: &Colour) -> i32 {
@@ -151,19 +179,17 @@ pub fn calculate_attack_mobility(board: &Board, colour: &Colour) -> f32 {
     let mut white_attack_count: f32 = 0.0;
     
     white_attack_count += get_king_attacks(board, &(board.colour.white & board.role.king)).count_ones() as f32 * 1.0;
-    white_attack_count += get_white_pawn_attacks(board, &(board.colour.white & board.role.pawn)).count_ones() as f32;
-    white_attack_count += get_knight_attacks(board, &(board.colour.white & board.role.knight)).count_ones() as f32 * 1.0;
-    white_attack_count += get_bishop_attacks(board, &(board.colour.white & board.role.bishop)).count_ones() as f32 * 1.0;
+    white_attack_count += get_white_pawn_attacks(board, &(board.colour.white & board.role.pawn)).count_ones() as f32 * 1.0;
+    white_attack_count += get_knight_attacks(board, &(board.colour.white & board.role.knight)).count_ones() as f32 * 1.1;
+    white_attack_count += get_bishop_attacks(board, &(board.colour.white & board.role.bishop)).count_ones() as f32 * 1.1;
     white_attack_count += get_rook_attacks(board, &(board.colour.white & board.role.rook)).count_ones() as f32 * 1.0;
-    white_attack_count += get_queen_attacks(board, &(board.colour.white & board.role.queen)).count_ones() as f32 * 1.0;
     
     let mut black_attack_count: f32 = 0.0;
     black_attack_count += get_king_attacks(board, &(board.colour.black & board.role.king)).count_ones() as f32 * 1.0;
-    black_attack_count += get_black_pawn_attacks(board, &(board.colour.black & board.role.pawn)).count_ones() as f32;
-    black_attack_count += get_knight_attacks(board, &(board.colour.black & board.role.knight)).count_ones() as f32 * 1.0;
-    black_attack_count += get_bishop_attacks(board, &(board.colour.black & board.role.bishop)).count_ones() as f32 * 1.0;
+    black_attack_count += get_black_pawn_attacks(board, &(board.colour.black & board.role.pawn)).count_ones() as f32 * 1.0;
+    black_attack_count += get_knight_attacks(board, &(board.colour.black & board.role.knight)).count_ones() as f32 * 1.1;
+    black_attack_count += get_bishop_attacks(board, &(board.colour.black & board.role.bishop)).count_ones() as f32 * 1.1;
     black_attack_count += get_rook_attacks(board, &(board.colour.black & board.role.rook)).count_ones() as f32 * 1.0;
-    black_attack_count += get_queen_attacks(board, &(board.colour.black & board.role.queen)).count_ones() as f32 * 1.0;
     
     match colour {
         Colour::White => return white_attack_count/black_attack_count,

@@ -1,5 +1,5 @@
 use std::fmt;
-use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, Shr};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitXor, BitOrAssign, Not, Shl, Shr};
 use crate::square::{EIGHTH_RANK, FIFTH_RANK, FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FIRST_RANK, FOURTH_RANK, SECOND_RANK, SEVENTH_RANK, SIXTH_RANK, THIRD_RANK};
 use arrayvec::ArrayVec;
 
@@ -254,6 +254,14 @@ impl BitOrAssign<&Bitboard> for Bitboard {
 impl BitOrAssign<Bitboard> for Bitboard {
     fn bitor_assign(&mut self, rhs: Bitboard) {
         self.0 |= rhs.0
+    }
+}
+
+impl BitXor<&Bitboard> for Bitboard {
+    type Output = Bitboard;
+    
+    fn bitxor(self, rhs: &Bitboard) -> Self::Output {
+        Bitboard(self.0 ^ rhs.0)
     }
 }
 
