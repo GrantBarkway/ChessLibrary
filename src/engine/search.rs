@@ -51,6 +51,7 @@ pub fn pick_move(board_starting_position: String, bot_time: (u64, u64), bot_colo
     let max_search_time: Duration = search_time(bot_time);
     
     let mut ordered_legal_moves = get_legal_moves(&board);
+    let total_legal_moves: i32 = ordered_legal_moves.len() as i32;
     
     let mut overall_best_mv: Option<Move> = None;
     let mut overall_best_mv_evaluation: i32 = i32::MIN;
@@ -94,7 +95,7 @@ pub fn pick_move(board_starting_position: String, bot_time: (u64, u64), bot_colo
             
             // Late move reduction
             if current_depth >= 3 {
-                ordered_legal_moves = late_move_reduction(order_moves_by_evaluation(move_evaluation));
+                ordered_legal_moves = late_move_reduction(order_moves_by_evaluation(move_evaluation), total_legal_moves, current_depth);
             } else {
                 ordered_legal_moves = order_moves_by_evaluation(move_evaluation);
             }
@@ -128,6 +129,7 @@ fn minmax(current_board: &Board, depth: i32, is_bots_move: bool, mut alpha: i32,
             return i32::MIN;
         }
         
+        // Null move pruning
         if depth >= 2 && !current_board.is_check(bot_colour) {
 
             let mut null_move_board: Board = current_board.clone();
@@ -241,16 +243,16 @@ fn quiesce(current_board: &Board, bot_colour: &Colour, is_bots_move: bool, mut a
 }
 
 // Removes lower ranked moves from further searches. Only to be applied after a certain depth
-fn late_move_reduction(mut moves: ArrayVec<Move, 218>) -> ArrayVec<Move, 218> {
-    let move_list_length = moves.len();
-    if move_list_length > 16 {
-        moves.truncate(moves.len()/4);
-    } else if move_list_length > 8 {
-        moves.truncate(moves.len()/3);
-    } else if move_list_length > 1 {
-        moves.truncate(moves.len()/2);
+fn late_move_reduction(mut moves: ArrayVec<Move, 218>, total_legal_moves: i32, current_depth: i32) -> ArrayVec<Move, 218> {
+    
+    let reduce_to: usize = (total_legal_moves - (current_depth.pow(3)).isqrt()) as usize;
+    
+    if reduce_to > 0 {
+        moves.truncate(reduce_to);
     }
-
+    
+    eprintln!("Total moves: {}, total moves being searched: {}", total_legal_moves, reduce_to);
+    
     return moves;
 }
 
